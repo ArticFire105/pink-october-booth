@@ -1,0 +1,5 @@
+node_modules/
+*.zip
+*_backup*/
+*.bak
+.DS_Store

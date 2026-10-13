@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#FFF8FB" />
+    <title>Pink October · GDG MAHE Dubai</title>
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@600&family=DM+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <button id="back-btn" class="ghost" type="button" hidden>← Booth</button>
+        <p class="brand landing-brand">
+          <span class="gdg-chip"><img src="assets/gdg-lockup-horizontal.svg" alt="Google Developer Groups" /></span>
+          <span class="brand-campus">MAHE Dubai</span>
+          <svg class="ribbon" viewBox="0 0 280 420" aria-hidden="true">
+            <path d="M65 380 195 147C241 69 166 31 140 87 114 31 39 69 85 147L215 380" fill="none" stroke="currentColor" stroke-width="23" />
+          </svg>
+        </p>
+        <p class="brand session-brand">
+          <svg class="ribbon" viewBox="0 0 280 420" aria-hidden="true">
+            <path d="M65 380 195 147C241 69 166 31 140 87 114 31 39 69 85 147L215 380" fill="none" stroke="currentColor" stroke-width="23" />
+          </svg>
+          GDG MAHE Dubai · Pink October
+        </p>
+        <details class="booth-controls">
+          <summary>Booth controls</summary>
+          <div class="booth-menu">
+            <label class="cam">Camera <select id="camera-select" aria-label="Camera"><option value="">Default camera</option></select></label>
+            <label><input id="mute" type="checkbox" /> Mute</label>
+            <button id="next-visitor" class="ghost" type="button">Next visitor</button>
+            <button id="full-btn" class="ghost" type="button" hidden>Full screen</button>
+            <button id="stats-open" class="ghost" type="button">Organizer stats (S)</button>
+          </div>
+        </details>
+      </header>
+
+      <main id="home" class="home">
+        <div class="landing-margin landing-margin-left" aria-hidden="true">
+          <div class="garlands garlands-left">
+            <div class="garland g1"><span class="garland-line"></span><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-r"><svg width="16" height="24" viewBox="0 0 16 24"><path d="M8 9C4 4 2 1.5 5 1s3 2 3 4c0-2 0-4.5 3-4s1 3-3 8L2.5 23M8 9l5.5 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i></div>
+            <div class="garland g2"><span class="garland-line"></span><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-r"><svg width="16" height="24" viewBox="0 0 16 24"><path d="M8 9C4 4 2 1.5 5 1s3 2 3 4c0-2 0-4.5 3-4s1 3-3 8L2.5 23M8 9l5.5 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i></div>
+          </div>
+          <div class="landing-hearts">
+            <svg viewBox="0 0 100 100" focusable="false"><path d="M47 83C36 72 9 54 10 32C11 12 34 9 48 29C57 7 84 13 88 31C94 51 63 75 47 83Z"/></svg>
+            <svg viewBox="0 0 100 100" focusable="false"><path d="M51 85C39 74 12 56 9 36C5 14 32 9 47 31C58 10 81 8 88 29C96 53 66 76 51 85Z"/></svg>
+          </div>
+        </div>
+        <div class="landing-margin landing-margin-right" aria-hidden="true">
+          <div class="garlands garlands-right">
+            <div class="garland g1"><span class="garland-line"></span><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-r"><svg width="16" height="24" viewBox="0 0 16 24"><path d="M8 9C4 4 2 1.5 5 1s3 2 3 4c0-2 0-4.5 3-4s1 3-3 8L2.5 23M8 9l5.5 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i></div>
+            <div class="garland g2"><span class="garland-line"></span><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-r"><svg width="16" height="24" viewBox="0 0 16 24"><path d="M8 9C4 4 2 1.5 5 1s3 2 3 4c0-2 0-4.5 3-4s1 3-3 8L2.5 23M8 9l5.5 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i></div>
+          </div>
+          <div class="landing-hearts">
+            <svg viewBox="0 0 100 100" focusable="false"><path d="M46 84C34 70 7 53 11 30C14 10 37 12 49 30C63 6 86 17 88 35C90 56 63 73 46 84Z"/></svg>
+            <svg viewBox="0 0 100 100" focusable="false"><path d="M52 83C38 74 13 59 10 37C7 15 32 8 47 28C60 10 83 12 87 32C93 51 69 74 52 83Z"/></svg>
+          </div>
+        </div>
+        <div class="hero">
+          <h1><span>One Heart.</span><span>One Fact.</span><span>One Action.</span></h1>
+          <p class="lede">Draw a heart. Discover a fact. Take one small action.</p>
+          <div class="entry-actions">
+            <button class="primary" data-mode="draw" type="button">Start · Draw Hope</button>
+            <button id="quiz-card" class="text-button" data-mode="quiz" type="button">Myth or Fact</button>
+            <span id="quiz-count" hidden>Three questions</span>
+          </div>
+          <p class="fine">Your camera stays on this device. Nothing is uploaded automatically.</p>
+          <p class="booth-count" data-booth-count>0 hearts drawn today</p>
+          <div id="heart-wall" class="heart-wall" role="img" aria-label="The last eight hearts drawn at this booth" hidden></div>
+          <div id="idle-demo" class="idle-demo" hidden>
+            <svg viewBox="0 0 100 90" aria-hidden="true"><path pathLength="1" d="M50 80 C38 68 8 48 8 27 C8 2 40 1 50 23 C60 1 92 2 92 27 C92 48 62 68 50 80" /></svg>
+            <p>Pinch to draw</p>
+          </div>
+          <footer class="landing-credit">Event by GDG MAHE Dubai · Pink October 2026</footer>
+          <p id="home-error" class="home-error" role="alert" hidden></p>
+        </div>
+        <svg class="poster-ribbon" viewBox="0 0 280 420" aria-hidden="true">
+          <path d="M65 380 195 147C241 69 166 31 140 87 114 31 39 69 85 147L215 380" fill="none" stroke="currentColor" stroke-width="23" />
+          <path d="m130 226 20-36" stroke="#FFF8FB" stroke-width="29" />
+          <path d="m130 226 20-36" stroke="currentColor" stroke-width="23" />
+          <g class="ribbon-pencil" opacity="0"><g class="ribbon-pencil-tip"><path d="M0 0 14 -7 54 -7 54 7 14 7Z" fill="#39152A"/><path d="M0 0 14 -7 14 7Z" fill="#F0CEDC"/><path d="M0 0 5 -2.5 5 2.5Z" fill="#39152A"/><rect x="54" y="-7" width="10" height="14" rx="2" fill="#C51D61"/></g></g>
+        </svg>
+      </main>
+
+      <section id="result" class="result" aria-labelledby="result-title" hidden>
+        <div id="result-achievement" class="result-copy">
+          <h2 id="result-title" class="sr-only" tabindex="-1">Your result</h2>
+          <canvas id="result-artwork" class="result-artwork" aria-label="Your drawn heart" role="img" hidden></canvas>
+          <p id="result-summary" class="result-score"></p>
+          <p id="result-stars" class="result-stars"></p>
+          <p id="result-fact" class="result-fact"></p>
+          <a id="result-source" target="_blank" rel="noopener noreferrer">WHO</a>
+        </div>
+        <div class="result-actions">
+          <button id="story-make" class="primary" type="button">Make my story</button>
+          <button id="result-home" class="ghost" type="button">Next</button>
+        </div>
+        <div id="story-step" class="story-step" hidden>
+          <p id="story-status" role="status" tabindex="-1"></p>
+          <img id="story-preview" class="story-preview" alt="Your 1080 by 1920 Pink October story PNG" hidden />
+          <div class="result-actions">
+            <button id="story-share" class="primary" type="button" disabled>Share story</button>
+            <button id="story-download" class="ghost" type="button" disabled>Download PNG</button>
+            <button id="result-photo" class="ghost" type="button">Add optional photo</button>
+          </div>
+          <p class="fine">Thumbs up or tap Take photo to start a countdown. Photos stay on this device until you choose to share.</p>
+        </div>
+        <p class="booth-count" data-booth-count>0 hearts drawn today</p>
+        <p class="result-timeout">Returns to the booth after 45s. <button id="result-more-time" class="text-button" type="button">More time</button></p>
+      </section>
+
+      <section id="stage" class="stage" hidden>
+        <div class="mirror">
+          <video id="video" autoplay playsinline muted></video>
+          <canvas id="draw-layer"></canvas>
+          <canvas id="fx-layer"></canvas>
+        </div>
+        <div class="vignette" aria-hidden="true"></div>
+
+        <div id="gate" class="gate" hidden>
+          <p id="gate-title" class="gate-title"></p>
+          <p id="gate-text"></p>
+          <button id="gate-retry" class="primary" type="button" hidden>Try again</button>
+        </div>
+
+        <div id="hint-bar" class="hint-bar" hidden>
+          <p id="hint-text"></p>
+          <button id="retry-btn" class="ghost" type="button" hidden>Try again</button>
+        </div>
+
+        <div class="draw-deco" aria-hidden="true">
+          <div class="garlands garlands-left"><div class="garland g1"><span class="garland-line"></span><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-r"><svg width="16" height="24" viewBox="0 0 16 24"><path d="M8 9C4 4 2 1.5 5 1s3 2 3 4c0-2 0-4.5 3-4s1 3-3 8L2.5 23M8 9l5.5 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i></div><div class="garland g2"><span class="garland-line"></span><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-r"><svg width="16" height="24" viewBox="0 0 16 24"><path d="M8 9C4 4 2 1.5 5 1s3 2 3 4c0-2 0-4.5 3-4s1 3-3 8L2.5 23M8 9l5.5 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i></div><div class="garland g3"><span class="garland-line"></span><i class="g-r"><svg width="16" height="24" viewBox="0 0 16 24"><path d="M8 9C4 4 2 1.5 5 1s3 2 3 4c0-2 0-4.5 3-4s1 3-3 8L2.5 23M8 9l5.5 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i></div></div>
+          <div class="garlands garlands-right"><div class="garland g1"><span class="garland-line"></span><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-r"><svg width="16" height="24" viewBox="0 0 16 24"><path d="M8 9C4 4 2 1.5 5 1s3 2 3 4c0-2 0-4.5 3-4s1 3-3 8L2.5 23M8 9l5.5 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i></div><div class="garland g2"><span class="garland-line"></span><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-r"><svg width="16" height="24" viewBox="0 0 16 24"><path d="M8 9C4 4 2 1.5 5 1s3 2 3 4c0-2 0-4.5 3-4s1 3-3 8L2.5 23M8 9l5.5 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i></div><div class="garland g3"><span class="garland-line"></span><i class="g-r"><svg width="16" height="24" viewBox="0 0 16 24"><path d="M8 9C4 4 2 1.5 5 1s3 2 3 4c0-2 0-4.5 3-4s1 3-3 8L2.5 23M8 9l5.5 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i><i class="g-h"><svg width="14" height="13" viewBox="0 0 14 13"><path d="M7 12.5S.5 8.3.5 4.1A3.4 3.4 0 0 1 7 2.6a3.4 3.4 0 0 1 6.5 1.5C13.5 8.3 7 12.5 7 12.5z" fill="currentColor"/></svg></i></div></div>
+        </div>
+        <div id="team-controls" class="team-controls" hidden><label><input id="team-mode" type="checkbox" /> Team mode · one half each</label></div>
+        <div id="draw-hud" class="draw-hud" hidden>
+          <p id="draw-count" class="draw-count" hidden>3</p>
+          <p id="draw-timer" class="draw-timer" hidden>22s</p>
+          <div id="draw-score" class="draw-score" hidden>
+            <p id="draw-percent"></p>
+            <p id="draw-stars" class="draw-stars"></p>
+            <p id="draw-blurb" class="draw-blurb"></p>
+            <p id="team-coverage" class="team-coverage"></p>
+          </div>
+
+        </div>
+        <div id="draw-actions" class="draw-actions" hidden>
+          <button id="draw-done" class="ghost" type="button">Done</button>
+          <button id="draw-reset" class="ghost" type="button">Reset</button>
+        </div>
+
+        <p id="corner-badge" class="corner-badge" hidden>Breast cancer awareness</p>
+        <p id="photo-count" class="photo-count" hidden>3</p>
+        <div id="photo-controls" class="draw-actions" hidden><button id="photo-take" class="ghost" type="button">Take photo</button></div>
+
+        <pre id="debug" class="debug" hidden></pre>
+
+        <div id="quiz" class="quiz" hidden>
+          <div id="quiz-ask" class="quiz-ask">
+            <p id="quiz-progress" class="progress">Question 1 of 3</p>
+            <h2 id="quiz-prompt"></h2>
+            <p id="quiz-note" class="quiz-note">Tilt your head and hold · or tap a side</p>
+            <button id="recenter-btn" class="ghost quiz-recenter" type="button">Recenter</button>
+            <label class="swap-tilt"><input id="swap-tilt" type="checkbox" /> Swap left/right</label>
+            <div class="tilt-meter" aria-hidden="true">
+              <span class="meter-label">Left answer</span>
+              <div id="meter" class="meter">
+                <span class="tick tick-left"></span>
+                <span class="tick tick-right"></span>
+                <span id="meter-puck" class="puck"></span>
+              </div>
+              <span class="meter-label">Right answer</span>
+            </div>
+          </div>
+          <button id="myth-btn" class="side side-myth" type="button">
+            <span id="myth-fill" class="side-fill"></span>
+            <span class="side-kicker">Tilt left</span>
+            <strong>Left answer</strong>
+            <span class="hold" aria-hidden="true"><span id="myth-hold"></span></span>
+          </button>
+          <button id="fact-btn" class="side side-fact" type="button">
+            <span id="fact-fill" class="side-fill"></span>
+            <span class="side-kicker">Tilt right</span>
+            <strong>Right answer</strong>
+            <span class="hold" aria-hidden="true"><span id="fact-hold"></span></span>
+          </button>
+          <div id="quiz-reveal" class="reveal" hidden>
+            <p id="verdict"></p>
+            <p id="truth-line" class="truth-line"></p>
+            <p id="explanation"></p>
+            <p><a href="https://www.who.int/news-room/fact-sheets/detail/breast-cancer" target="_blank" rel="noopener noreferrer">Awareness: WHO</a> · <a href="https://www.cancer.gov/types/breast" target="_blank" rel="noopener noreferrer">NCI</a> · <a href="https://www.cancer.org/cancer/types/breast-cancer.html" target="_blank" rel="noopener noreferrer">ACS</a></p>
+            <p class="fine">Thumbs up for next</p>
+            <button id="next-btn" class="primary" type="button">Next</button>
+          </div>
+
+        </div>
+        <p id="live" class="sr-only" aria-live="polite"></p>
+      </section>
+    </div>
+    <dialog id="stats" aria-labelledby="stats-title">
+      <h2 id="stats-title">Organizer stats · This booth</h2>
+      <p>Use one booth tab. Sessions are visits started, not verified unique people. Each mode and export counts once per session, including retries. Back to booth keeps the session; Next visitor or timeout ends it.</p>
+      <dl>
+        <dt>Sessions started</dt><dd id="count-sessions">0</dd>
+        <dt>Draw Hope completions</dt><dd id="count-draw">0</dd>
+        <dt>Myth or Fact completions</dt><dd id="count-quiz">0</dd>
+        <dt>Sessions with an export</dt><dd id="count-exports">0</dd>
+      </dl>
+      <p>Exports mean download requests or completed share handoffs, not verified saves or posts. No photos or personal information are stored in these counters.</p>
+      <p id="storage-warning" role="status"></p>
+      <div class="result-actions">
+        <button id="stats-csv" class="primary" type="button">Export CSV</button>
+        <button id="stats-reset" class="ghost" type="button">Reset event…</button>
+        <button id="wall-reset" class="ghost" type="button">Reset heart wall</button>
+        <button id="stats-close" class="ghost" type="button">Close</button>
+      </div>
+    </dialog>
+    <svg id="finish-ribbon" viewBox="0 0 280 420" aria-hidden="true"><path d="M65 380 195 147C241 69 166 31 140 87 114 31 39 69 85 147L215 380" fill="none" stroke="currentColor" stroke-width="23" /></svg>
+    <noscript>This booth needs JavaScript turned on in Chrome.</noscript>
+    <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/ribbon-pencil.js"></script>
+    <script type="module" src="js/silk-trail.js"></script>
+  </body>
+</html>
