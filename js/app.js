@@ -1,3 +1,4 @@
+import { preferCamera } from "./camera-pref.js";
 import { createInterlude, shouldPlayInterlude, INTERLUDE } from "./interlude.js";
 import { createPhotoChoice } from "./photo-choice.js";
 import { createFactRotator, renderPhotoFact } from "./fact-rotator.js";
@@ -1150,9 +1151,11 @@ function setHint(text, { locked = false, retry = false } = {}) {
   retryBtn.hidden = !retry;
 }
 
+// Automatically chosen built-in camera (not a manual choice; memory only).
+let autoCameraId = "";
 function readCameraId() {
   try {
-    return localStorage.getItem(CAMERA_KEY) || "";
+    return sessionStorage.getItem(CAMERA_KEY) || "";
   } catch {
     return "";
   }
@@ -1160,8 +1163,8 @@ function readCameraId() {
 
 function writeCameraId(id) {
   try {
-    if (id) localStorage.setItem(CAMERA_KEY, id);
-    else localStorage.removeItem(CAMERA_KEY);
+    if (id) sessionStorage.setItem(CAMERA_KEY, id);
+    else sessionStorage.removeItem(CAMERA_KEY);
   } catch {
     /* private mode or blocked storage */
   }
@@ -1183,6 +1186,8 @@ async function listCameras() {
     cameraSelect.append(option);
   });
   if ([...cameraSelect.options].some((option) => option.value === saved)) cameraSelect.value = saved;
+  if (!saved) autoCameraId = preferCamera(devices.filter((d) => d.label))?.deviceId || "";
+  return devices;
 }
 
 async function onCameraChange() {
@@ -1196,7 +1201,8 @@ async function onCameraChange() {
 
 async function ensureCamera() {
   const token = ++cameraToken;
-  const wanted = readCameraId();
+  const manual = readCameraId();
+  const wanted = manual || autoCameraId;
   if (stream && stream.getVideoTracks().some((track) => track.readyState === "live")) {
     const current = stream.getVideoTracks()[0].getSettings().deviceId || "";
     if (!wanted || current === wanted) {
@@ -1217,7 +1223,7 @@ async function ensureCamera() {
   } catch (error) {
     if (token !== cameraToken) return false;
     if (!wanted) throw error;
-    writeCameraId("");
+    if (manual) writeCameraId(""); else autoCameraId = "";
     cameraSelect.value = "";
     next = await openCamera("");
   }
@@ -1243,6 +1249,11 @@ async function ensureCamera() {
     return false;
   }
   await listCameras().catch((error) => console.warn("Camera list unavailable", error));
+  // First open used the browser default; switch once to the preferred built-in camera.
+  const current = stream?.getVideoTracks()[0]?.getSettings().deviceId || "";
+  if (!manual && !wanted && autoCameraId && current && autoCameraId !== current && token === cameraToken) {
+    return ensureCamera();
+  }
   return token === cameraToken;
 }
 
