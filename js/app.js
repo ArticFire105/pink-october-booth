@@ -1,4 +1,3 @@
-import { keyboardLayout, hitKey, createNameEntry } from "./name-keyboard.js";
 import { createInterlude, shouldPlayInterlude, INTERLUDE } from "./interlude.js";
 import { createPhotoChoice } from "./photo-choice.js";
 import { createFactRotator, renderPhotoFact } from "./fact-rotator.js";
@@ -25,7 +24,6 @@ import {
   mapCoverPoint,
   pinchRatio,
   isThumbsUp,
-  isPinching,
   isThumbsDown,
 } from "./gestures.js";
 import { createIdleWatch, createPointFilter, shouldBreakStroke } from "./filters.js";
@@ -274,7 +272,7 @@ document.getElementById("choose-photo").onclick = () => choosePhotoOption("photo
 document.getElementById("choose-heart").onclick = () => choosePhotoOption("heart");
 
 function showPhotoChoice(result) {
-  currentResult = { ...result, name: roundName, heartArtwork: result.artwork,
+  currentResult = { ...result, heartArtwork: result.artwork,
     fact: factBag.next(), heart: normalizeHeart(drawState.strokes) };
   counters.record("draw");
   boothExtras.refresh();
@@ -490,8 +488,6 @@ function resetMode(mode) {
   clearDrawing();
   resetDrawBoard();
   resetSelfie();
-  if (mode === "draw") startNameEntry();
-  else hideNameEntry();
   if (mode === "quiz") {
     state.questions = pickQuestions(PINK_QUIZ_QUESTIONS, 3);
     state.answers = [];
@@ -531,7 +527,6 @@ function resetSelfie() {
 }
 
 function goHome() {
-  hideNameEntry();
   if (interlude) { interludeDone = null; stopInterlude(); }
   clearPhotoUI();
   boothExtras.leave();
@@ -639,65 +634,8 @@ function detectFace(now) {
   if (state.face) state.lastFaceAt = now;
 }
 
-// ---- Optional player name (air keyboard) ----
-let roundName = "", nameEntry = null;
-const nameEl = document.getElementById("name-entry");
-const nameKeysEl = document.getElementById("name-keys");
-const nameCursor = document.getElementById("name-cursor");
-const nameRing = document.getElementById("name-confirm-ring");
-const nameKeys = keyboardLayout();
-const nameKeyEls = new Map();
-for (const key of nameKeys) {
-  const b = document.createElement("button");
-  b.type = "button"; b.className = "name-key" + (key.id.length > 1 ? " wide" : "");
-  b.dataset.id = key.id; b.textContent = key.label;
-  b.setAttribute("aria-label", { SKIP: "Skip name", SPACE: "Space", BACK: "Backspace", OK: "Done" }[key.id] ?? key.id);
-  Object.assign(b.style, { left: key.x * 100 + "%", top: key.y * 100 + "%", width: key.w * 100 + "%", height: key.h * 100 + "%" });
-  b.onclick = () => { if (nameEntry) { nameEntry.press(key.id, performance.now()); afterNameInput(); } };
-  nameKeysEl.append(b); nameKeyEls.set(key.id, b);
-}
-function startNameEntry() {
-  roundName = "";
-  nameEntry = createNameEntry();
-  drawState.phase = "name";
-  nameEl.hidden = false; drawHud.hidden = true;
-  document.querySelector("#team-controls").hidden = true;
-  document.getElementById("name-display").textContent = "";
-}
-function hideNameEntry() { nameEl.hidden = true; nameCursor.hidden = true; nameEntry = null; }
-function afterNameInput() {
-  document.getElementById("name-display").textContent = nameEntry.name;
-  if (nameEntry.result) {
-    roundName = nameEntry.result.name;
-    hideNameEntry();
-    drawHud.hidden = false;
-    document.querySelector("#team-controls").hidden = false;
-    drawState.phase = "countdown"; drawState.ticking = false;
-  }
-}
-function renderNameEntry(now) {
-  document.querySelector("#team-controls").hidden = true;
-  const hand = state.hands[0];
-  let point = null, pinching = false;
-  if (hand) {
-    const v = toView(hand[HAND.INDEX_TIP]);
-    if (v) point = { x: 1 - v.x / view.w, y: v.y / view.h }; // display is mirrored
-    pinching = isPinching(hand);
-  }
-  const key = hitKey(nameKeys, point);
-  const out = nameEntry.update({ key: key?.id ?? null, pinching, thumbsUp: state.hands.some(isThumbsUp), now });
-  for (const [id, el] of nameKeyEls) el.classList.toggle("hover", key?.id === id);
-  if (out.typed) { const el = nameKeyEls.get(out.typed); el.classList.add("typed"); setTimeout(() => el.classList.remove("typed"), 180); }
-  nameCursor.hidden = !point;
-  if (point) { nameCursor.style.left = point.x * 100 + "%"; nameCursor.style.top = point.y * 100 + "%"; nameCursor.classList.toggle("pinch", pinching); }
-  nameRing.hidden = !(out.confirmProgress > 0);
-  nameRing.querySelector("circle").style.strokeDashoffset = 1 - out.confirmProgress;
-  afterNameInput();
-}
-
 function renderDraw(now) {
   lastPinch = null;
-  if (drawState.phase === "name") { if (nameEntry) renderNameEntry(now); return; }
   if (drawState.phase === "countdown" && state.visionReady && state.cameraOk && gate.hidden) {
     if (!drawState.ticking) {
       drawState.ticking = true;
@@ -1207,7 +1145,7 @@ function hideGate() {
 function setHint(text, { locked = false, retry = false } = {}) {
   state.hintLocked = locked;
   if (text && hintText.textContent !== text) hintText.textContent = text;
-  const hideBar = !text || (state.mode === "draw" && drawState.phase === "name") || state.mode === "quiz" || state.mode === "home" || !gate.hidden;
+  const hideBar = !text || state.mode === "quiz" || state.mode === "home" || !gate.hidden;
   if (hintBar.hidden !== hideBar) hintBar.hidden = hideBar;
   retryBtn.hidden = !retry;
 }

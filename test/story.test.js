@@ -139,3 +139,25 @@ test("story writes the sanitised player name on the polaroid only when present",
   renderStory(canvas, { fact: "F" });
   assert.ok(!texts.some(t => /\u2019s heart$/.test(t)));
 });
+
+test("sanitizeStoryName keeps letters and single spaces, max 16", async () => {
+  const { sanitizeStoryName, STORY_NAME_MAX } = await import("../js/story.js");
+  assert.equal(STORY_NAME_MAX, 16);
+  assert.equal(sanitizeStoryName("  Ri$hi  V<3"), "Rihi V");
+  assert.equal(sanitizeStoryName("abcdefghijklmnopqrstuv").length, 16);
+  assert.equal(sanitizeStoryName(null), "");
+  assert.equal(sanitizeStoryName("Anne-Marie O'Neil"), "AnneMarie ONeil");
+});
+
+test("photo variant also carries the name caption; empty name renders no caption", async () => {
+  const { renderStory } = await import("../js/story.js");
+  const texts = [];
+  const ctx = new Proxy({ fillText: t => texts.push(t), measureText: () => ({ width: 100 }),
+    createRadialGradient: () => ({ addColorStop() {} }), createLinearGradient: () => ({ addColorStop() {} }) },
+    { get: (o, k) => k in o ? o[k] : () => {}, set: (o, k, v) => (o[k] = v, true) });
+  renderStory({ getContext: () => ctx }, { name: "Mia", fact: "F", variant: "photo", artwork: { width: 10, height: 10 } });
+  assert.ok(texts.includes("Mia\u2019s heart"));
+  texts.length = 0;
+  renderStory({ getContext: () => ctx }, { name: "   ", fact: "F" });
+  assert.ok(!texts.some(t => t.endsWith("\u2019s heart")));
+});

@@ -1,4 +1,4 @@
-import { FACT, SOURCE, ensureStoryFonts, renderStory, pngBlob, shareStory } from "./story.js";
+import { FACT, SOURCE, ensureStoryFonts, renderStory, pngBlob, shareStory, sanitizeStoryName } from "./story.js";
 
 export function createResultScreen({ onHome, onExport = () => {},
   schedule = setTimeout, cancel = clearTimeout }) {
@@ -21,6 +21,25 @@ export function createResultScreen({ onHome, onExport = () => {},
   }
   get("result-more-time").onclick = restartTimeout;
 
+  // Optional name typed on the preview screen; memory only, cleared each round.
+  const nameInput = get("story-name-input");
+  let playerName = "", nameTimer = 0;
+  if (nameInput?.addEventListener) {
+    nameInput.addEventListener("keydown", event => event.stopPropagation());
+    nameInput.addEventListener("input", () => {
+      const clean = sanitizeStoryName(nameInput.value);
+      if (clean !== nameInput.value) nameInput.value = clean;
+      restartTimeout();
+      cancel(nameTimer);
+      nameTimer = schedule(() => {
+        const next = clean.trim();
+        if (!result || next === playerName) return;
+        playerName = next;
+        generate({ quiet: true });
+      }, 350);
+    });
+  }
+
   function invalidate() {
     generation += 1;
     if (heartURL && heartURL !== url) URL.revokeObjectURL(heartURL);
@@ -33,21 +52,22 @@ export function createResultScreen({ onHome, onExport = () => {},
     preview.hidden = true;
     share.disabled = download.disabled = true;
   }
-  async function generate() {
-    invalidate();
+  async function generate({ quiet = false } = {}) {
+    let old = [];
+    if (quiet) { generation += 1; old = [url, heartURL]; }
+    else invalidate();
     const token = generation;
-    status.textContent = "Creating your story…";
-    status.focus();
+    if (!quiet) { status.textContent = "Creating your story…"; status.focus(); }
     try {
       await ensureStoryFonts();
       if (token !== generation) return;
       const canvas = renderStory(document.createElement("canvas"), {
-        ...result, artwork: result.heartArtwork ?? result.artwork, variant: "heart",
+        ...result, name: playerName, artwork: result.heartArtwork ?? result.artwork, variant: "heart",
       });
       const heartBlob = await pngBlob(canvas);
       if (token !== generation) return;
       const blob = result.photoArtwork ? await pngBlob(renderStory(document.createElement("canvas"), {
-        ...result, artwork: result.photoArtwork, variant: "photo",
+        ...result, name: playerName, artwork: result.photoArtwork, variant: "photo",
       })) : heartBlob;
       if (token !== generation) return;
       file = new File([blob], "gdg-pink-october.png", { type: "image/png" });
@@ -57,7 +77,8 @@ export function createResultScreen({ onHome, onExport = () => {},
       preview.src = url;
       preview.hidden = false;
       share.disabled = download.disabled = false;
-      status.textContent = "Your story is ready.";
+      for (const u of new Set(old)) if (u && u !== url && u !== heartURL) URL.revokeObjectURL(u);
+      status.textContent = quiet ? (playerName ? `Updated with ${playerName}\u2019s name.` : "Name removed.") : "Your story is ready.";
     } catch {
       if (token === generation) {
         status.textContent = "Could not create the PNG. Please return and try again.";
@@ -113,6 +134,9 @@ export function createResultScreen({ onHome, onExport = () => {},
       status.textContent = "";
       generate();
     },
-    clear() { stopTimeout(); invalidate(); result = null; panel.hidden = true; },
+    clear() {
+      stopTimeout(); cancel(nameTimer); invalidate(); result = null; panel.hidden = true;
+      playerName = ""; if (nameInput) nameInput.value = "";
+    },
   };
 }
