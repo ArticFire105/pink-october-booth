@@ -6,10 +6,11 @@ test("shared finish preserves the selected fact through photos and clears stale 
   const elements = new Map();
   const pending = [];
   const revoked = [];
+  const uploads = [];
   const get = id => {
     if (!elements.has(id)) elements.set(id, {
       hidden: true, disabled: false, textContent: "",
-      getContext() { return { drawImage() {} }; },
+      getContext() { return { drawImage() {}, fillRect() {} }; },
       removeAttribute(name) { delete this[name]; }, focus() {},
     });
     return elements.get(id);
@@ -35,6 +36,7 @@ test("shared finish preserves the selected fact through photos and clears stale 
   try {
     const screen = createResultScreen({ onPhoto: () => photos++, onHome: () => homes++,
       onExport: () => exports++,
+      upload: () => new Promise(resolve => uploads.push(resolve)),
       schedule(fn, ms) { assert.equal(ms, 45000); timer = fn; return 1; },
       cancel() { timer = null; } });
     screen.show({ label: "Quiz", correct: 2, total: 4, fact: "Chosen awareness fact." });
@@ -53,11 +55,18 @@ test("shared finish preserves the selected fact through photos and clears stale 
     assert.equal(timer, null);
     assert.equal(exports, 0);
     assert.deepEqual(revoked, ["blob:1"]);
+    uploads.shift()("https://booth.example/p.html?u=old");
+    await Promise.resolve();
+    assert.equal(get("download-qr").hidden, true, "stale upload cannot reveal QR");
     screen.show({ label: "Photo", fact: "Chosen awareness fact.", artwork: { width: 1280, height: 720 } }, true);
     await flush();
     assert.equal(get("story-status").textContent, "Your story is ready.");
     assert.equal(get("result-fact").textContent, "Chosen awareness fact.");
 
+    uploads.shift()("https://booth.example/p.html?u=current");
+    await Promise.resolve();
+    assert.equal(get("download-qr").hidden, false);
+    assert.ok(get("download-qr-canvas").width > 0);
     get("story-download").onclick();
     assert.equal(exports, 1);
     get("story-make").onclick();
@@ -66,6 +75,7 @@ test("shared finish preserves the selected fact through photos and clears stale 
     await flush();
     assert.equal(get("story-preview").src, undefined);
     assert.equal(get("result").hidden, true);
+    assert.equal(get("download-qr").hidden, true);
     assert.equal(get("story-share").disabled, true);
     screen.show({ label: "Draw", percent: 82, stars: 4, artwork: { width: 800, height: 600 } });
     assert.equal(get("result-summary").textContent, "82%");

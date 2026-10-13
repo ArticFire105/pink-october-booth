@@ -1,7 +1,9 @@
+import { uploadImage } from "./cloud-share.js";
+import { paintQR, qrMatrix } from "./story-qr.js";
 import { FACT, SOURCE, renderStory, pngBlob, shareStory } from "./story.js";
 
 export function createResultScreen({ onPhoto, onHome, onExport = () => {},
-  schedule = setTimeout, cancel = clearTimeout }) {
+  upload = uploadImage, schedule = setTimeout, cancel = clearTimeout }) {
   const get = id => document.getElementById(id);
   const panel = get("result");
   const preview = get("story-preview");
@@ -22,6 +24,7 @@ export function createResultScreen({ onPhoto, onHome, onExport = () => {},
 
   function invalidate() {
     generation += 1;
+    get("download-qr").hidden = true;
     if (url) URL.revokeObjectURL(url);
     url = "";
     file = null;
@@ -44,6 +47,13 @@ export function createResultScreen({ onPhoto, onHome, onExport = () => {},
       preview.hidden = false;
       share.disabled = download.disabled = false;
       status.textContent = "Your story is ready.";
+      void upload(blob).then(downloadURL => {
+        if (token !== generation || !downloadURL) return;
+        const qr = get("download-qr-canvas");
+        qr.width = qr.height = (qrMatrix(downloadURL).length + 8) * 4;
+        paintQR(qr.getContext("2d"), downloadURL, 0, 0, 4);
+        get("download-qr").hidden = false;
+      }).catch(() => { /* Local download remains available. */ });
     } catch {
       if (token === generation) {
         get("story-make").hidden = false;

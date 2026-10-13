@@ -72,7 +72,7 @@
             <button id="quiz-card" class="text-button" data-mode="quiz" type="button">Myth or Fact</button>
             <span id="quiz-count" hidden>Three questions</span>
           </div>
-          <p class="fine">Your camera stays on this device. Nothing is uploaded automatically.</p>
+          <p class="fine">Your camera stays on this device. Your story image is uploaded only to make a download QR and is deleted within 24–48 hours.</p>
           <p class="booth-count" data-booth-count>0 hearts drawn today</p>
           <div id="heart-wall" class="heart-wall" role="img" aria-label="The last eight hearts drawn at this booth" hidden></div>
           <div id="idle-demo" class="idle-demo" hidden>
@@ -111,7 +111,11 @@
             <button id="story-download" class="ghost" type="button" disabled>Download PNG</button>
             <button id="result-photo" class="ghost" type="button">Add optional photo</button>
           </div>
-          <p class="fine">Thumbs up or tap Take photo to start a countdown. Photos stay on this device until you choose to share.</p>
+          <figure id="download-qr" class="download-qr" hidden>
+            <canvas id="download-qr-canvas" role="img" aria-label="QR code to download your story"></canvas>
+            <figcaption>Scan with your phone to download</figcaption>
+          </figure>
+          <p class="fine">Thumbs up or tap Take photo to start a countdown. Photos included in your story are uploaded to make its download QR.</p>
         </div>
         <p class="booth-count" data-booth-count>0 hearts drawn today</p>
         <p class="result-timeout">Returns to the booth after 45s. <button id="result-more-time" class="text-button" type="button">More time</button></p>

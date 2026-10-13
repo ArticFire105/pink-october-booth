@@ -2,7 +2,7 @@
 
 **One Heart. One Fact. One Action.** A free, plain-JavaScript breast cancer awareness booth: play a short challenge, read a sourced fact, and take away a portrait story. Two modes share one finish. No account, API key, backend, or paid service is required.
 
-MediaPipe hand/face tracking runs locally in the browser. Video is not uploaded or recorded by the app. Optional photos and story previews stay in memory until cleared; saving or sharing requires a click. Requested downloads remain on the device after reset. External requests load MediaPipe, its models, and Google Fonts; internet access is required for reliable setup. Browser caching is not an offline guarantee.
+MediaPipe hand/face tracking runs locally in the browser. Video is not uploaded or recorded by the app. Optional photos and story previews stay in memory until cleared. Creating a story also uploads its PNG to make a download QR when cloud storage is configured; uploads are deleted within 24–48 hours by the daily cleanup. Local saving or sharing requires a click. Requested downloads remain on the device after reset. External requests load MediaPipe, its models, and Google Fonts; internet access is required for reliable setup. Browser caching is not an offline guarantee.
 
 ## Run
 
@@ -88,3 +88,14 @@ Run this on the actual booth laptop, browser, camera, and network before the eve
 - [ ] Check narrow/short screens and zoom: all answers, explanations, result controls, and organizer controls must remain reachable.
 - [ ] Complete **ten consecutive visits without reloading**, using Next visitor between visits. For one completed mode per visit, expect sessions +10 and combined mode completions +10; record expected export totals beforehand. Retries and repeated clicks must not add duplicates.
 - [ ] Check result timeout, More time, and clearing the previous visitor's image. Export CSV, reload to check persistence, then test cancelled and confirmed event reset. Clear rehearsal counts before the event.
+
+
+## Download QR hosting
+
+Deploy this directory to Vercel using the **Other** framework preset, with no build command and the project root as the static output. `api/upload.js` and `api/cleanup.js` are Node serverless functions; the remaining files still work as a plain static site. Run `npm install` to install `@vercel/blob`. A static-only local server keeps local PNG downloads working and silently omits the cloud QR.
+
+Connect a public Vercel Blob store and set `BLOB_READ_WRITE_TOKEN` and a strong `CRON_SECRET` in the deployment environment. Never put either secret in client files. The daily cron runs at 03:00 UTC, deleting `booth/` blobs older than 24 hours. The 24–48 hour retention assumes successful scheduled runs. The public image URL is accessible to anyone with its link.
+
+The upload handler enforces a 6 MiB maximum. Vercel currently imposes a lower [4.5 MB function request limit](https://vercel.com/docs/functions/limitations); larger hosted requests fail silently in the QR flow while local download remains available. No framework build, external application server, or paid service plan is required by this implementation; hosting and Blob usage remain subject to the provider’s quotas.
+
+After deployment, create a story, scan its download QR on a phone, and test Save photo (including the iOS long-press fallback). Verify that an authenticated cleanup call removes an expired test blob and preserves a fresh one. Tests use injected storage doubles and do not contact Blob storage.
