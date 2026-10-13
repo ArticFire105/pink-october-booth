@@ -78,7 +78,7 @@ export function createResultScreen({ onHome, onExport = () => {},
       preview.hidden = false;
       share.disabled = download.disabled = false;
       for (const u of new Set(old)) if (u && u !== url && u !== heartURL) URL.revokeObjectURL(u);
-      status.textContent = quiet ? (playerName ? `Updated with ${playerName}\u2019s name.` : "Name removed.") : "Your story is ready.";
+      status.textContent = quiet ? (playerName ? `Updated with ${playerName}.` : "Name removed.") : "Your story is ready.";
     } catch {
       if (token === generation) {
         status.textContent = "Could not create the PNG. Please return and try again.";

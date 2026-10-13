@@ -124,7 +124,7 @@ export function renderStory(canvas, result) {
   const name = sanitizeStoryName(result.name).trim();
   if (name) {
     // Written on the polaroid's bottom strip, like a caption.
-    const caption = `${name}\u2019s heart`;
+    const caption = name; // exactly as typed
     let size = 66;
     do { ctx.font = `600 ${size}px "Bodoni Moda", Georgia, serif`; size -= 2; }
     while (size > 24 && ctx.measureText(caption).width > 600);
@@ -133,7 +133,6 @@ export function renderStory(canvas, result) {
     ctx.shadowColor = "rgba(222,129,167,.55)"; ctx.shadowBlur = 14; ctx.shadowOffsetY = 3;
     ctx.fillStyle = "#A3175A"; ctx.fillText(caption, 0, 358);
     ctx.restore();
-    heart(ctx, Math.min(300, ctx.measureText(caption).width / 2 + 34), 340, 26, true, .2);
   }
   ctx.restore();
   // Side ornaments remain beyond the rotated opening (including its corner extents).
