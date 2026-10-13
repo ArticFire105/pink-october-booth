@@ -159,6 +159,14 @@
         </div>
 
         <p id="corner-badge" class="corner-badge" hidden>Breast cancer awareness</p>
+        <section id="name-entry" class="name-entry" hidden aria-labelledby="name-entry-title">
+          <h2 id="name-entry-title" class="name-title">Your name <small>(optional)</small></h2>
+          <p id="name-display" class="name-display" aria-live="polite"></p>
+          <p class="name-hint">Pinch letters to type your name · 👍 to confirm</p>
+          <div id="name-keys" class="name-keys"></div>
+          <div id="name-cursor" class="name-cursor" hidden></div>
+          <svg id="name-confirm-ring" class="name-confirm-ring" viewBox="0 0 100 100" aria-hidden="true" hidden><circle cx="50" cy="50" r="44" pathLength="1"/></svg>
+        </section>
         <section id="interlude" class="interlude" hidden aria-label="Your heart">
           <video id="interlude-video" src="assets/interlude.mp4" poster="assets/interlude-poster.jpg" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>
           <canvas id="interlude-heart" aria-hidden="true"></canvas>

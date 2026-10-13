@@ -125,3 +125,17 @@ test("watercolour is repeatable and long facts shrink within the card", () => {
   }
   assert.deepEqual(traces[0], traces[1]);
 });
+
+test("story writes the sanitised player name on the polaroid only when present", async () => {
+  const { renderStory } = await import("../js/story.js");
+  const texts = [];
+  const ctx = new Proxy({ fillText: t => texts.push(t), measureText: () => ({ width: 100 }),
+    createRadialGradient: () => ({ addColorStop() {} }), createLinearGradient: () => ({ addColorStop() {} }),
+    getImageData: () => ({ data: [] }) }, { get: (o, k) => k in o ? o[k] : () => {}, set: (o, k, v) => (o[k] = v, true) });
+  const canvas = { getContext: () => ctx };
+  renderStory(canvas, { name: "Ri<s>hi 9", fact: "F" });
+  assert.ok(texts.includes("Rishi\u2019s heart"), texts.join("|"));
+  texts.length = 0;
+  renderStory(canvas, { fact: "F" });
+  assert.ok(!texts.some(t => /\u2019s heart$/.test(t)));
+});

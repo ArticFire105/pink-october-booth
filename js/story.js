@@ -115,6 +115,16 @@ export function renderStory(canvas, result) {
     ctx.fillText("Stay curious.", 0, -60);
   }
   ctx.strokeStyle = "#60434E"; ctx.lineWidth = 1.5; ctx.strokeRect(x, y, w, h);
+  const name = String(result.name ?? "").replace(/[^A-Za-z ]+/g, "").replace(/\s+/g, " ").trim().slice(0, 12);
+  if (name) {
+    // Written on the polaroid's bottom strip, like a caption.
+    const caption = `${name}\u2019s heart`;
+    let size = 66;
+    do { ctx.font = `600 ${size}px "Bodoni Moda", Georgia, serif`; size -= 2; }
+    while (size > 24 && ctx.measureText(caption).width > 600);
+    ctx.fillStyle = "#8E1F52"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(caption, 0, 358);
+  }
   ctx.restore();
   // Side ornaments remain beyond the rotated opening (including its corner extents).
   sprig(ctx, 182, 1140, -.28); sprig(ctx, 910, 694, .28);
