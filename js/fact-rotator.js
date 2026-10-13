@@ -1,15 +1,52 @@
 import { FACTS, SOURCE } from "./awareness-facts.js";
 
-export function createFactRotator(facts = FACTS, source = SOURCE) {
-  let index = 0;
-  const state = { current: Object.freeze({ text: facts[0], source }), locked: false };
+const LAST_KEY = "pob-last-fact-start";
+function defaultStorage() { try { return globalThis.localStorage ?? null; } catch { return null; } }
+
+// Fisher–Yates shuffle with an injectable random source.
+export function shuffled(items, random = Math.random) {
+  const out = items.slice();
+  for (let i = out.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(random() * (i + 1));
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+// Rotates facts in a shuffled order that starts at a random fact each round
+// (avoiding the previous round's start) and never shows the same fact twice in a row.
+export function createFactRotator(facts = FACTS, source = SOURCE,
+  { random = Math.random, storage = defaultStorage() } = {}) {
+  let order = [], index = 0;
+  const state = { current: null, locked: false };
+  const set = text => { state.current = Object.freeze({ text, source }); };
+  function readLast() { try { return storage?.getItem(LAST_KEY) ?? null; } catch { return null; } }
+  function shuffle(avoidFirst) {
+    order = shuffled(facts, random);
+    if (order.length > 1 && order[0] === avoidFirst) {
+      const k = 1 + Math.floor(random() * (order.length - 1));
+      [order[0], order[k]] = [order[k], order[0]];
+    }
+  }
+  function reset() {
+    if (state.locked) return state.current;
+    shuffle(readLast());
+    index = 0;
+    set(order[0]);
+    try { storage?.setItem(LAST_KEY, order[0]); } catch {}
+    return state.current;
+  }
+  reset();
   return {
     get state() { return { ...state }; },
+    get order() { return order.slice(); },
     current() { return state.current; },
+    reset,
     next() {
       if (!state.locked) {
-        index = (index + 1) % facts.length;
-        state.current = Object.freeze({ text: facts[index], source });
+        index += 1;
+        if (index >= order.length) { shuffle(order[order.length - 1]); index = 0; }
+        set(order[index]);
       }
       return state.current;
     },

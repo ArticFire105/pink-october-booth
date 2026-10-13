@@ -311,6 +311,7 @@ function displayPhotoFact(fact) {
 
 function startPhotoFacts() {
   photoFacts.unlock();
+  photoFacts.reset(); // fresh random start each round
   const panel = document.getElementById("photo-fact");
   panel.hidden = false;
   displayPhotoFact(photoFacts.current());
