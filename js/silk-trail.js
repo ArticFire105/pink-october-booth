@@ -37,7 +37,8 @@ export function anchorHead(points, target) {
 export function setupSilkTrail({ enabled = SILK_ENABLED } = {}) {
   if (!enabled) return;
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-  if (reduce.matches) return;
+  const touch = window.matchMedia('(hover: none), (pointer: coarse)');
+  if (reduce.matches || touch.matches) return;
   const canvas = document.createElement('canvas');
   canvas.className = 'silk-trail';
   canvas.setAttribute('aria-hidden', 'true');
@@ -112,7 +113,7 @@ export function setupSilkTrail({ enabled = SILK_ENABLED } = {}) {
 
   function tick(now) {
     frame = 0;
-    if (isCameraScreen() || document.hidden || reduce.matches) { stop(); return; }
+    if (isCameraScreen() || document.hidden || reduce.matches || touch.matches) { stop(); return; }
     const alpha = fadeAlpha(now - lastMove);
     if (!alpha) { stop(); return; }
     points = anchorHead(step(points, target, 0.28, (now - lastFrame) / (1000 / 60)), target);
@@ -122,7 +123,7 @@ export function setupSilkTrail({ enabled = SILK_ENABLED } = {}) {
   }
 
   function move(event) {
-    if (isCameraScreen() || document.hidden || reduce.matches || !event.isPrimary) return;
+    if (isCameraScreen() || document.hidden || reduce.matches || touch.matches || !event.isPrimary) return;
     if (target && target.x === event.clientX && target.y === event.clientY) return;
     target = { x: event.clientX, y: event.clientY };
     lastMove = performance.now();
@@ -149,10 +150,12 @@ export function setupSilkTrail({ enabled = SILK_ENABLED } = {}) {
     window.removeEventListener('resize', resize);
     document.removeEventListener('visibilitychange', visibility);
     reduce.removeEventListener('change', motionChange);
+    touch.removeEventListener('change', motionChange);
     canvas.remove();
   }
-  function motionChange() { if (reduce.matches) dispose(); }
+  function motionChange() { if (reduce.matches || touch.matches) dispose(); }
   reduce.addEventListener('change', motionChange);
+  touch.addEventListener('change', motionChange);
   resize();
   visibility();
   return dispose;

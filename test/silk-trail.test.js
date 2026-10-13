@@ -113,3 +113,12 @@ test('silk is on by default and can be disabled without touching the DOM', () =>
   assert.equal(SILK_ENABLED, true);
   assert.equal(setupSilkTrail({ enabled: false }), undefined);
 });
+
+
+test('touch and coarse-pointer devices install no silk canvas or listeners', () => {
+  globalThis.window = {
+    matchMedia: query => ({ matches: query === '(hover: none), (pointer: coarse)' }),
+  };
+  try { assert.equal(setupSilkTrail(), undefined); }
+  finally { delete globalThis.window; }
+});

@@ -24,6 +24,7 @@ html,
 body {
   margin: 0;
   height: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -845,6 +846,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 @media (max-width: 700px) { .garlands { width: 14vw; } .garland.g2 { display: none; } }
 .draw-deco { display: none; position: absolute; inset: 0; pointer-events: none; z-index: 2; }
 .stage:has(#draw-hud:not([hidden])) .draw-deco { display: block; }
+.stage .garland { animation: none; }
 
 .booth-count { margin: 20px 0 8px; color: #735765; font-size: 13px; }
 .heart-wall { display: flex; flex-wrap: wrap; gap: 8px; max-width: 440px; margin-top: 12px; }
@@ -925,18 +927,18 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 @media (min-width: 1401px) {
   #home:not([hidden]) .landing-margin { display: block; }
 }
-@media (min-width: 1401px) and (prefers-reduced-motion: no-preference) {
+@media (min-width: 1401px) {
   #home:not([hidden]) .landing-margin .garland { animation: landing-garland-sway 8s ease-in-out infinite alternate; }
   #home:not([hidden]) .landing-margin .g2 { animation-duration: 11s; animation-delay: -4s; }
   #home:not([hidden]) .landing-margin-right .garland { animation-direction: alternate-reverse; }
-  #home:not([hidden]) .landing-hearts svg { animation: landing-margin-drift 17s ease-in-out infinite alternate; }
-  #home:not([hidden]) .landing-hearts svg:nth-child(2) { animation-duration: 23s; animation-delay: -8s; }
-  #home:not([hidden]) .landing-margin-right .landing-hearts svg { animation-direction: alternate-reverse; animation-delay: -5s; }
+  #home:not([hidden]) .landing-hearts svg { animation: landing-margin-drift 8s ease-in-out infinite; animation-delay: -1s; }
+  #home:not([hidden]) .landing-hearts svg:nth-child(2) { animation-duration: 9s; animation-delay: -4s; }
+  #home:not([hidden]) .landing-margin-right .landing-hearts svg { animation-direction: reverse; animation-duration: 7s; animation-delay: -2.5s; }
 }
-@keyframes landing-garland-sway { from { transform: rotate(-1.5deg); } to { transform: rotate(1.5deg); } }
+@keyframes landing-garland-sway { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
 @keyframes landing-margin-drift {
-  from { transform: translateY(8px) rotate(-10deg); opacity: .28; }
-  to { transform: translateY(-16px) rotate(8deg); opacity: .46; }
+  0%, 100% { transform: translate(-4px, 14px) rotate(-3deg); }
+  50% { transform: translate(6px, -18px) rotate(3deg); }
 }
 @media (prefers-reduced-motion: no-preference) {
   .home:not([hidden]) h1 span { animation: landing-line 650ms ease-out both; }
@@ -958,7 +960,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .home[hidden] { display: none; }
 .home[hidden] *, .home[hidden] *::before, .home[hidden] *::after { animation: none !important; }
 @media (prefers-reduced-motion: reduce) {
-  .home *, .home *::before, .home *::after { animation: none !important; transition: none !important; }
+  .home *:not(.garland):not(.landing-hearts svg), .home *::before, .home *::after { animation: none !important; transition: none !important; }
 }
 @media (max-width: 720px) {
   .topbar:has(+ .home:not([hidden])) { flex-wrap: wrap; }
@@ -997,3 +999,73 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .balloon-settings label:first-of-type { justify-content: flex-start; }
 .balloon-settings select { max-width: 150px; }
 .balloon-settings :focus-visible { outline: 2px solid #C51D61; outline-offset: 3px; }
+
+/* Distinct phases keep the four margin hearts from moving as a group. */
+#home:not([hidden]) .landing-margin-right .landing-hearts svg:nth-child(2) {
+  animation-duration: 10s; animation-delay: -6.5s;
+}
+
+/* Phone layouts: safe-area padding belongs to controls, never the mirrored
+   camera box, so video and landmark canvases retain identical coordinates. */
+@media (max-width: 720px) {
+  .garlands, #home .landing-margin { display: none !important; }
+  button, summary, select { min-height: 48px; }
+  .topbar {
+    padding: max(8px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) 8px max(16px, env(safe-area-inset-left));
+  }
+  .landing-brand { flex: 1 1 100%; }
+  .gdg-chip img { width: min(250px, 64vw); height: 25px; }
+  .brand-campus { white-space: normal; }
+  .booth-menu { width: min(280px, calc(100vw - 32px)); max-height: 65dvh; overflow-y: auto; }
+  .home {
+    display: flex; flex-direction: column; justify-content: flex-start; align-items: stretch; gap: 20px;
+    padding: 16px max(20px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  }
+  .home .hero { width: 100%; min-width: 0; }
+  .home h1 { font-size: clamp(40px, 11.5vw, 50px); }
+  .home .poster-ribbon { display: block; order: -1; width: 54px; height: 81px; flex: none; align-self: center; }
+  .entry-actions { margin-block: 24px; width: 100%; gap: 8px; }
+  .entry-actions button { width: 100%; }
+  .landing-credit { margin-top: 24px; }
+  .heart-wall { max-width: 100%; }
+  .result { padding: 20px max(20px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); }
+  .result-copy, .story-step, .result-actions { width: 100%; min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+  .result-actions { flex-direction: column; }
+  .result-actions button { width: 100%; white-space: normal; }
+  .result-score { font-size: clamp(36px, 11vw, 48px); }
+  .story-preview { max-width: 100%; }
+  .app:has(#stage:not([hidden])) .topbar {
+    height: calc(48px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) max(8px, env(safe-area-inset-right)) 0 max(8px, env(safe-area-inset-left));
+    gap: 4px;
+  }
+  .app:has(#stage:not([hidden])) .topbar > .ghost,
+  .app:has(#stage:not([hidden])) .booth-controls > summary { height: 48px; min-height: 48px; }
+  .app:has(#stage:not([hidden])) .brand { white-space: normal; font-size: 10px; gap: 4px; }
+  .stage .quiz, .stage .draw-hud { top: calc(56px + env(safe-area-inset-top)); }
+  .stage .draw-hud { width: calc(100% - 32px); }
+  .stage .team-controls { top: calc(56px + env(safe-area-inset-top)); left: max(8px, env(safe-area-inset-left)); font-size: 12px; }
+  .stage .quiz {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    padding: 0 max(8px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  }
+  .quiz-ask { padding: 4px 8px 0; }
+  #quiz-prompt { font-size: clamp(20px, 5.5vw, 24px); }
+  .quiz-note { font-size: 13px; }
+  .tilt-meter { width: 100%; gap: 8px; margin-top: 8px; }
+  .meter-label { font-size: 10px; letter-spacing: 0; }
+  .side { padding: 12px 8px; border-radius: 16px; }
+  .side strong { font-size: 18px; }
+  .hint-bar { width: calc(100% - 32px); bottom: max(12px, env(safe-area-inset-bottom)); border-radius: 16px; font-size: 14px; }
+  .draw-actions { bottom: calc(112px + env(safe-area-inset-bottom)); width: calc(100% - 32px); justify-content: center; }
+  .draw-actions button { flex: 1; }
+  .corner-badge { left: max(16px, env(safe-area-inset-left)); bottom: calc(88px + env(safe-area-inset-bottom)); font-size: 11px; }
+  .reveal { padding: 20px 16px; overflow-y: auto; justify-content: safe center; }
+  .reveal > * { flex-shrink: 0; max-width: 100%; }
+  #verdict { font-size: 40px; }
+  #explanation { font-size: 16px; }
+  .reveal .primary { width: 100%; }
+  .gate { padding-top: calc(64px + env(safe-area-inset-top)); }
+  dialog { max-width: calc(100% - 32px); max-height: calc(100dvh - 48px); overflow: auto; }
+}
+@media (hover: none), (pointer: coarse) { .silk-trail { display: none; } }
