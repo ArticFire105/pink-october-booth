@@ -812,8 +812,10 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .result-fact { font-size: 18px; line-height: 1.5; }
 .result a { display: inline-block; color: #735765; font-size: 12px; margin-top: 8px; }
 .result-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; }
-.story-step { max-width: 40rem; }
-.story-preview { display: block; width: min(100%, 250px); height: auto; margin: 20px auto; }
+.story-step { width: 100%; max-width: 40rem; }
+.story-preview { display: block; width: auto; height: auto; max-width: 100%; max-height: 60dvh; aspect-ratio: 9 / 16; object-fit: contain; margin: 0 auto 20px; }
+.story-controls { min-width: 0; }
+.story-controls > .result-actions { margin-top: 16px; }
 .story-step .fine { color: #735765; margin-top: 20px; font-size: 13px; }
 .result-timeout { color: #735765; font-size: 12px; margin-top: auto; }
 @media (max-width: 720px) {
@@ -1081,3 +1083,32 @@ body.photo-download-page { overflow-y: auto; height: auto; color: #39152A; backg
 .photo-download .primary { width: 100%; min-height: 56px; background: #c2185b; color: white; font-size: 1.15rem; }
 .photo-download button:focus-visible { outline: 3px solid #39152A; outline-offset: 4px; }
 body:has(#result:not([hidden])) .silk-trail, body:has(#download-qr:not([hidden])) .silk-trail { display: none; }
+
+/* The QR's padding must fit inside the story column on narrow phones. */
+.story-controls .download-qr canvas { max-width: 100%; }
+
+@media (min-width: 900px) and (orientation: landscape) {
+  .result:has(#story-step:not([hidden])) { gap: 12px; padding-block: 12px 16px; }
+  .result:has(#story-step:not([hidden])) > .booth-count { margin: 0; }
+  .result:has(#story-step:not([hidden])) .story-step {
+    flex: 1;
+    min-height: 0;
+    max-width: 1040px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(352px, 400px);
+    grid-template-rows: minmax(0, 1fr);
+    align-items: center;
+    gap: clamp(24px, 4vw, 64px);
+  }
+  .story-step .story-preview {
+    grid-column: 1;
+    justify-self: end;
+    height: 100%;
+    max-height: 80dvh;
+    min-height: 0;
+    margin: 0;
+  }
+  .story-controls { grid-column: 2; grid-row: 1; }
+  .story-controls .result-actions { flex-direction: column; gap: 8px; }
+  .story-controls .fine { margin-top: 12px; }
+}

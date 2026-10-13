@@ -12,7 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@600&family=DM+Sans:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=16afacd" />
+    <link rel="stylesheet" href="css/styles.css?v=f685cf1" />
   </head>
   <body>
     <div class="app">
@@ -104,18 +104,20 @@
           <button id="result-home" class="ghost" type="button">Next</button>
         </div>
         <div id="story-step" class="story-step" hidden>
-          <p id="story-status" role="status" tabindex="-1"></p>
           <img id="story-preview" class="story-preview" alt="Your 1080 by 1920 Pink October story PNG" hidden />
-          <div class="result-actions">
-            <button id="story-share" class="primary" type="button" disabled>Share story</button>
-            <button id="story-download" class="ghost" type="button" disabled>Download PNG</button>
-            <button id="result-photo" class="ghost" type="button">Add optional photo</button>
+          <div class="story-controls">
+            <p id="story-status" role="status" tabindex="-1"></p>
+            <div class="result-actions">
+              <button id="story-share" class="primary" type="button" disabled>Share story</button>
+              <button id="story-download" class="ghost" type="button" disabled>Download PNG</button>
+              <button id="result-photo" class="ghost" type="button">Add optional photo</button>
+            </div>
+            <figure id="download-qr" class="download-qr" hidden>
+              <canvas id="download-qr-canvas" role="img" aria-label="QR code to download your story"></canvas>
+              <figcaption>Scan to download your photo</figcaption>
+            </figure>
+            <p class="fine">Thumbs up or tap Take photo to start a countdown. Photos included in your story are uploaded to make its download QR.</p>
           </div>
-          <figure id="download-qr" class="download-qr" hidden>
-            <canvas id="download-qr-canvas" role="img" aria-label="QR code to download your story"></canvas>
-            <figcaption>Scan to download your photo</figcaption>
-          </figure>
-          <p class="fine">Thumbs up or tap Take photo to start a countdown. Photos included in your story are uploaded to make its download QR.</p>
         </div>
         <p class="booth-count" data-booth-count>0 hearts drawn today</p>
         <p class="result-timeout">Returns to the booth after 45s. <button id="result-more-time" class="text-button" type="button">More time</button></p>
@@ -229,8 +231,8 @@
     </dialog>
     <svg id="finish-ribbon" viewBox="0 0 280 420" aria-hidden="true"><path d="M65 380 195 147C241 69 166 31 140 87 114 31 39 69 85 147L215 380" fill="none" stroke="currentColor" stroke-width="23" /></svg>
     <noscript>This booth needs JavaScript turned on in Chrome.</noscript>
-    <script type="module" src="js/app.js?v=16afacd"></script>
-    <script type="module" src="js/ribbon-pencil.js?v=16afacd"></script>
-    <script type="module" src="js/silk-trail.js?v=16afacd"></script>
+    <script type="module" src="js/app.js?v=f685cf1"></script>
+    <script type="module" src="js/ribbon-pencil.js?v=f685cf1"></script>
+    <script type="module" src="js/silk-trail.js?v=f685cf1"></script>
   </body>
 </html>
