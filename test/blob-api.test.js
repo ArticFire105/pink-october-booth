@@ -68,3 +68,15 @@ test('cleanup follows pagination and deletes only expired blobs', async t => {
   assert.deepEqual(deleted, ['old1', 'old2']);
   assert.deepEqual(calls, [{ prefix: 'booth/' }, { prefix: 'booth/', cursor: 'next' }]);
 });
+
+import { allowedOrigin } from '../api/upload.js';
+test('upload CORS allows booth origins only', async () => {
+  for (const o of ['http://localhost:8742', 'http://127.0.0.1:5500', 'https://pink-october-booth.vercel.app', 'https://pink-october-booth-abc123-artic-fire105.vercel.app'])
+    assert.equal(allowedOrigin(o), o);
+  for (const o of ['https://evil.com', 'https://pink-october-booth.vercel.app.evil.com', 'https://xpink-october-booth.vercel.app', undefined])
+    assert.equal(allowedOrigin(o), null);
+  const headers = {}; let code;
+  const res = { setHeader: (k, v) => { headers[k] = v; }, status(c) { code = c; return this; }, end() {} };
+  await createUploadHandler(async () => ({}))({ method: 'OPTIONS', headers: { origin: 'http://localhost:8742' } }, res);
+  assert.equal(code, 204); assert.equal(headers['Access-Control-Allow-Origin'], 'http://localhost:8742');
+});

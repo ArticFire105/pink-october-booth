@@ -11,11 +11,11 @@ test('cloud upload succeeds or silently falls back, including offline and timeou
   const blob = new Blob(['png'], { type: 'image/png' });
   const url = 'https://test.public.blob.vercel-storage.com/booth/test.png';
   assert.equal(await uploadImage(blob, { fetchImpl: async (path, options) => {
-    assert.equal(path, '/api/upload');
+    assert.equal(path, 'https://pink-october-booth.vercel.app/api/upload');
     assert.equal(options.body, blob);
     assert.equal(options.headers['Content-Type'], 'image/png');
     return { ok: true, json: async () => ({ url }) };
-  } }), `https://booth.example/p.html?u=${encodeURIComponent(url)}`);
+  } }), `${url}?download=1`);
   for (const fetchImpl of [async () => { throw Error(); }, async () => ({ ok: false }),
     async () => ({ ok: true, json: async () => { throw Error(); } }),
     async () => ({ ok: true, json: async () => ({ url: 'https://evil.example/a.png' }) })]) {

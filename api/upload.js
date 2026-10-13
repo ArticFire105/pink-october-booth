@@ -5,8 +5,23 @@ export const config = { api: { bodyParser: false } };
 const MAX_BYTES = 6 * 1024 * 1024;
 const PNG_MAGIC = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
 
+export function allowedOrigin(origin) {
+  if (typeof origin !== 'string') return null;
+  return /^https:\/\/pink-october-booth(-[a-z0-9-]+)?\.vercel\.app$/.test(origin) ||
+    /^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin) ? origin : null;
+}
+
 export function createUploadHandler(putBlob = put) {
   return async function handler(req, res) {
+    const origin = allowedOrigin(req.headers.origin);
+    if (origin) {
+      res.setHeader('Access-Control-Allow-Origin', origin);
+      res.setHeader('Vary', 'Origin');
+      res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Access-Control-Max-Age', '86400');
+    }
+    if (req.method === 'OPTIONS') return res.status(origin ? 204 : 403).end();
     if (req.method !== 'POST') {
       res.setHeader('Allow', 'POST');
       return res.status(405).json({ error: 'method-not-allowed' });

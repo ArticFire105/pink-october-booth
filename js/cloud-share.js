@@ -1,3 +1,5 @@
+export const PUBLIC_ORIGIN = 'https://pink-october-booth.vercel.app';
+
 export function validBlobURL(value) {
   try {
     const url = new URL(value);
@@ -15,12 +17,12 @@ export async function uploadImage(blob, { fetchImpl = globalThis.fetch, timeoutM
       timer = setTimeout(() => { controller.abort(); resolve(null); }, timeoutMs);
     });
     const upload = async () => {
-      const response = await fetchImpl('/api/upload', {
+      const response = await fetchImpl(`${PUBLIC_ORIGIN}/api/upload`, {
         method: 'POST', headers: { 'Content-Type': 'image/png' }, body: blob, signal: controller.signal,
       });
       if (!response.ok) return null;
       const url = validBlobURL((await response.json()).url);
-      return url ? `${globalThis.location.origin}/p.html?u=${encodeURIComponent(url)}` : null;
+      return url ? `${url}?download=1` : null;
     };
     return await Promise.race([upload(), timeout]);
   } catch { return null; }
