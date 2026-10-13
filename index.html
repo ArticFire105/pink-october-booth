@@ -159,9 +159,13 @@
         </div>
 
         <p id="corner-badge" class="corner-badge" hidden>Breast cancer awareness</p>
+        <section id="interlude" class="interlude" hidden aria-label="Your heart">
+          <video id="interlude-video" src="assets/interlude.mp4" poster="assets/interlude-poster.jpg" muted playsinline preload="auto" disablepictureinpicture aria-hidden="true"></video>
+          <canvas id="interlude-heart" aria-hidden="true"></canvas>
+          <button id="interlude-skip" class="interlude-skip" type="button">Skip</button>
+        </section>
         <section id="photo-choice" class="photo-choice" aria-labelledby="photo-choice-title" hidden>
-          <h2 id="photo-choice-title" tabindex="-1">Keep your heart. Add your smile?</h2>
-          <p>Hold a thumbs up or thumbs down</p>
+          <h2 id="photo-choice-title" class="choice-hint" tabindex="-1">Hold 👍 or 👎</h2>
           <div class="photo-choice-options">
             <div>
               <div class="choice-gesture"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="choice-track" cx="50" cy="50" r="45"/><circle id="choice-photo-ring" class="choice-progress" cx="50" cy="50" r="45" pathLength="1"/></svg><span aria-hidden="true">👍</span></div>

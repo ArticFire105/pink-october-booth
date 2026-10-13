@@ -99,7 +99,7 @@ test("drawing export mirrors the ink just like the displayed canvas", () => {
     scoreHeartDrawing: () => ({ percent: 0, stars: 0 }), placeOutline() {}, OUTLINE: [],
     view: { w: 800, h: 600 }, drawActions: {}, drawCount: {}, drawLayer: ink,
     drawScore: {}, drawPercent: {}, drawStars: {}, drawBlurb: {},
-    heartBlurb: () => "", setHint() {}, reduceMotion: false,
+    heartBlurb: () => "", setHint() {}, reduceMotion: false, startInterlude: () => false, INTERLUDE: { holdMs: 1000 },
     spawnConfetti: () => calls.push(["confetti"]), live: {}, drawResultTimer: 0,
     setTimeout: callback => { calls.push(["scheduled"]); app.complete = callback; },
     document: { createElement: () => ({ getContext: () => ctx }) },

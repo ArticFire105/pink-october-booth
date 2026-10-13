@@ -1,3 +1,4 @@
+import { createInterlude, shouldPlayInterlude, INTERLUDE } from "./interlude.js";
 import { createPhotoChoice } from "./photo-choice.js";
 import { createFactRotator, renderPhotoFact } from "./fact-rotator.js";
 import { boundsOf, composePortrait } from "./photo-stickers.js";
@@ -400,6 +401,7 @@ async function createModels() {
 }
 
 async function enterMode(mode) {
+  if (interlude) { interludeDone = null; stopInterlude(); }
   clearPhotoUI();
   boothExtras.leave();
   if (mode === "quiz" && !state.questions) return;
@@ -524,6 +526,7 @@ function resetSelfie() {
 }
 
 function goHome() {
+  if (interlude) { interludeDone = null; stopInterlude(); }
   clearPhotoUI();
   boothExtras.leave();
   currentResult = null;
@@ -578,6 +581,7 @@ function frame(now) {
   if (now - state.lastHandsAt > 400) state.hands = [];
   if (state.mode === "draw") renderDraw(now);
   else if (state.mode === "choice") renderPhotoChoice(now);
+  else if (state.mode === "interlude") renderInterlude(now);
   else if (state.mode === "heart") renderHeart(now);
   else if (state.mode === "quiz") renderQuiz(now);
   stepParticles(dt);
@@ -751,6 +755,114 @@ function renderDraw(now) {
 
 }
 
+// ---- Video interlude (heart-motion) ----
+const interludeEl = document.getElementById("interlude");
+const interludeVideo = document.getElementById("interlude-video");
+const interludeCanvas = document.getElementById("interlude-heart");
+let interludeVideoOk = true, interlude = null, interludeHeart = null, interludeDone = null;
+interludeVideo.addEventListener("error", () => { interludeVideoOk = false; if (interlude) interlude.fail(); });
+try { interludeVideo.load(); } catch { interludeVideoOk = false; }
+document.getElementById("interlude-skip").onclick = () => interlude?.skip(performance.now());
+
+// Crop the artwork canvas to the bounding box of drawn pixels.
+function cropHeart(source) {
+  const { width: w, height: h } = source;
+  if (!w || !h) return null;
+  const data = source.getContext("2d").getImageData(0, 0, w, h).data;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) {
+    if (data[(y * w + x) * 4 + 3] > 20) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  }
+  if (x1 < 0) return null;
+  const pad = 12; x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad);
+  x1 = Math.min(w, x1 + pad); y1 = Math.min(h, y1 + pad);
+  const c = document.createElement("canvas");
+  c.width = x1 - x0; c.height = y1 - y0;
+  c.getContext("2d").drawImage(source, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
+  return c;
+}
+
+function startInterlude(artwork, done) {
+  if (!shouldPlayInterlude({ reduceMotion, videoOk: interludeVideoOk })) return false;
+  interludeHeart = cropHeart(artwork);
+  if (!interludeHeart) return false;
+  interlude = createInterlude(performance.now());
+  interludeDone = done;
+  state.mode = "interlude";
+  drawHud.hidden = true; hintBar.hidden = true;
+  document.querySelector("#team-controls").hidden = true;
+  document.body.classList.add("interlude-on");
+  interludeEl.classList.remove("playing");
+  interludeVideo.pause();
+  try { interludeVideo.currentTime = 0; } catch {}
+  interludeEl.hidden = false;
+  return true;
+}
+
+function stopInterlude() {
+  interludeEl.hidden = true;
+  interludeEl.classList.remove("playing");
+  document.body.classList.remove("interlude-on");
+  interludeVideo.pause();
+  interlude = null;
+}
+
+function paintInterludeHeart(phase, reveal, hold) {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const W = interludeEl.clientWidth, H = interludeEl.clientHeight;
+  if (interludeCanvas.width !== Math.round(W * dpr)) { interludeCanvas.width = Math.round(W * dpr); interludeCanvas.height = Math.round(H * dpr); }
+  const ctx = interludeCanvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, W, H);
+  const img = interludeHeart;
+  let boxW, boxH, alpha;
+  if (phase === "hold" || (phase === "video" && hold < 1)) {
+    // Large centred heart on plain pink; fades out as the video crossfades in.
+    boxW = W * .6; boxH = H * .7; alpha = phase === "hold" ? 1 : 1 - hold;
+  } else {
+    // Empty centre of the video's heart: x/y 35–65% of the 1920x1080 frame under object-fit: cover.
+    const scale = Math.max(W / 1920, H / 1080);
+    boxW = 1920 * scale * .28; boxH = 1080 * scale * .28;
+    alpha = reveal;
+  }
+  if (alpha <= 0) return;
+  const grow = phase === "reveal" ? .85 + .15 * reveal : 1;
+  const s = Math.min(boxW / img.width, boxH / img.height) * grow;
+  const w = img.width * s, h = img.height * s;
+  ctx.globalAlpha = alpha;
+  ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+  ctx.globalAlpha = 1;
+}
+
+let videoPhaseStart = 0;
+function renderInterlude(now) {
+  if (!interlude) return;
+  const thumbsUp = state.hands.some(isThumbsUp);
+  const handOpen = !thumbsUp && (state.hands.length === 0 || state.hands.some(isOpenPalm));
+  const before = interlude.phase;
+  const videoTime = interludeEl.classList.contains("playing") && !interludeVideo.paused ? interludeVideo.currentTime : null;
+  const st = interlude.update(now, { videoTime, thumbsUp, handOpen });
+  if (before === "hold" && st.phase === "video") {
+    videoPhaseStart = now;
+    interludeEl.classList.add("playing");
+    const p = interludeVideo.play();
+    if (p && p.catch) p.catch(() => interlude?.fail());
+  }
+  if (st.phase === "video" && now - videoPhaseStart > 14000) interlude.fail(); // stalled
+  if ((st.phase === "end") && before !== "end") {
+    // Skipped or reached: show the video's final frame.
+    interludeEl.classList.add("playing");
+    if (interludeVideo.duration) { interludeVideo.pause(); try { interludeVideo.currentTime = interludeVideo.duration - .05; } catch {} }
+  }
+  const hold = st.phase === "video" ? Math.min(1, (now - videoPhaseStart) / 500) : 0;
+  if (interludeHeart) paintInterludeHeart(st.phase, st.reveal, hold);
+  if (interlude.phase === "done") {
+    const done = interludeDone; interludeDone = null;
+    stopInterlude();
+    done?.();
+  }
+}
+
 function finishDrawing() {
   if (state.mode !== "draw" || drawState.phase !== "draw") return;
   const result = scoreHeartDrawing(drawState.strokes);
@@ -781,11 +893,13 @@ function finishDrawing() {
   ctx.scale(-1, 1);
   ctx.drawImage(drawLayer, 0, 0);
   const entry = state.entry;
+  const choiceResult = { artwork, percent: result.percent, stars: result.stars, label: `Draw Hope · Heart tracing ${result.percent}% · ${result.stars}/5 stars` };
+  if (startInterlude(artwork, () => {
+    if (state.entry === entry && state.mode === "interlude") showPhotoChoice(choiceResult);
+  })) return;
   drawResultTimer = setTimeout(() => {
-    if (state.entry === entry && state.mode === "draw" && drawState.phase === "scored") {
-      showPhotoChoice({ artwork, percent: result.percent, stars: result.stars, label: `Draw Hope · Heart tracing ${result.percent}% · ${result.stars}/5 stars` });
-    }
-  }, 3000);
+    if (state.entry === entry && state.mode === "draw" && drawState.phase === "scored") showPhotoChoice(choiceResult);
+  }, INTERLUDE.holdMs);
 }
 
 function heartBlurb(stars) {
