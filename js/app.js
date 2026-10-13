@@ -829,8 +829,11 @@ function paintInterludeHeart(phase, reveal, hold) {
   const grow = phase === "reveal" ? .85 + .15 * reveal : 1;
   const s = Math.min(boxW / img.width, boxH / img.height) * grow;
   const w = img.width * s, h = img.height * s;
+  // Video heart's empty centre sits slightly above frame centre (y≈47%); keep clear of the #GDGPinkOctober line (y≈93%).
+  const frameScale = Math.max(W / 1920, H / 1080);
+  const cy = phase === "hold" || (phase === "video" && hold < 1) ? H / 2 : H / 2 - .03 * 1080 * frameScale;
   ctx.globalAlpha = alpha;
-  ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h);
+  ctx.drawImage(img, (W - w) / 2, cy - h / 2, w, h);
   ctx.globalAlpha = 1;
 }
 
