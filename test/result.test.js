@@ -1,3 +1,4 @@
+import { mockContext } from "./helpers/canvas.js";
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createResultScreen } from "../js/result.js";
@@ -5,6 +6,7 @@ import { createResultScreen } from "../js/result.js";
 test("automatic result produces separate heart/photo downloads and clears stale exports", async () => {
   const elements = new Map();
   const pending = [];
+  const rendered = [];
   const revoked = [];
   const downloads = [];
   const get = id => {
@@ -25,14 +27,14 @@ test("automatic result produces separate heart/photo downloads and clears stale 
     body: { append() {} },
     createElement(tag) {
       if (tag === "a") return { click() { downloads.push(this); }, remove() {} };
-      return { getContext: () => ({ fillRect() {}, fillText() {}, drawImage() {}, measureText: s => ({ width: s.length * 20 }) }),
+      return { getContext: () => mockContext({ drawImage(image) { rendered.push(image); } }),
         toBlob(cb) { pending.push(cb); } };
     },
   };
   globalThis.File = class { constructor(parts, name, options) { this.name = name; this.type = options.type; } };
   URL.createObjectURL = () => `blob:${++sequence}`;
   URL.revokeObjectURL = url => revoked.push(url);
-  const flush = async () => { pending.shift()(new Blob(["png"])); await Promise.resolve(); await Promise.resolve(); };
+  const flush = async () => { await Promise.resolve(); if (!pending.length) return; pending.shift()(new Blob(["png"])); await Promise.resolve(); await Promise.resolve(); };
   try {
     const screen = createResultScreen({ onHome: () => homes++,
       onExport: () => exports++,
@@ -40,6 +42,7 @@ test("automatic result produces separate heart/photo downloads and clears stale 
       cancel() { timer = null; } });
     const heart = { width: 800, height: 600 };
     screen.show({ percent: 82, stars: 4, artwork: heart, heartArtwork: heart, fact: "Chosen awareness fact." });
+    await Promise.resolve();
     assert.equal(pending.length, 1, "PNG generation starts without a click");
     assert.equal(get("story-step").hidden, false);
     assert.equal(get("story-share").disabled, true);
@@ -50,12 +53,13 @@ test("automatic result produces separate heart/photo downloads and clears stale 
     get("story-download").onclick();
     assert.equal(exports, 1);
 
-    const photo = { width: 1080, height: 1920, toBlob(cb) { pending.push(cb); } };
+    const photo = { width: 1080, height: 1920, toBlob() { assert.fail("Photo must be rendered through the template"); } };
     screen.show({ artwork: photo, heartArtwork: heart, photoArtwork: photo });
     await flush();
     assert.equal(pending.length, 1, "photo is encoded separately from heart");
     await flush();
     assert.equal(get("story-preview").src, "blob:3");
+    assert.deepEqual(rendered, [heart, heart, photo]);
     assert.equal(get("photo-download").hidden, false);
     get("story-download").onclick();
     get("photo-download").onclick();

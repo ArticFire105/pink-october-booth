@@ -1,4 +1,4 @@
-import { FACT, SOURCE, renderStory, pngBlob, shareStory } from "./story.js";
+import { FACT, SOURCE, ensureStoryFonts, renderStory, pngBlob, shareStory } from "./story.js";
 
 export function createResultScreen({ onHome, onExport = () => {},
   schedule = setTimeout, cancel = clearTimeout }) {
@@ -39,12 +39,16 @@ export function createResultScreen({ onHome, onExport = () => {},
     status.textContent = "Creating your story…";
     status.focus();
     try {
+      await ensureStoryFonts();
+      if (token !== generation) return;
       const canvas = renderStory(document.createElement("canvas"), {
-        ...result, artwork: result.heartArtwork ?? result.artwork,
+        ...result, artwork: result.heartArtwork ?? result.artwork, variant: "heart",
       });
       const heartBlob = await pngBlob(canvas);
       if (token !== generation) return;
-      const blob = result.photoArtwork ? await pngBlob(result.photoArtwork) : heartBlob;
+      const blob = result.photoArtwork ? await pngBlob(renderStory(document.createElement("canvas"), {
+        ...result, artwork: result.photoArtwork, variant: "photo",
+      })) : heartBlob;
       if (token !== generation) return;
       file = new File([blob], "gdg-pink-october.png", { type: "image/png" });
       heartURL = URL.createObjectURL(heartBlob);

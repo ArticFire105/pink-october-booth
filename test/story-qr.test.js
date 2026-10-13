@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { qrMatrix, paintQR } from '../js/story-qr.js';
-import { SOURCE, renderStory } from '../js/story.js';
+import { SOURCE } from '../js/story.js';
 
 test('local QR encoder generates a square WHO matrix with finder patterns', () => {
   const matrix = qrMatrix(SOURCE);
@@ -24,7 +24,4 @@ test('story QR uses integer modules and four-module quiet zone within the portra
     assert.ok(x + w <= 724 + size - 20 && y + h <= 1490 + size - 20);
     assert.equal(w, 5); assert.equal(h, 5);
   }
-  const labels = [];
-  renderStory({ getContext: () => ({ ...ctx, fillText: text => labels.push(text), measureText: text => ({ width: text.length * 20 }) }) }, { label: 'Draw Hope' }, true);
-  assert.ok(labels.includes('Scan: WHO fact sheet'));
 });

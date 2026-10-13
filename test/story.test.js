@@ -1,15 +1,15 @@
+import { mockContext } from "./helpers/canvas.js";
 import test from "node:test";
 import assert from "node:assert/strict";
-import { FACT, renderStory, pngBlob, shareStory } from "../js/story.js";
+import { FACT, ensureStoryFonts, renderStory, pngBlob, shareStory } from "../js/story.js";
 
 function canvasSpy() {
   const text = [], images = [];
-  const ctx = {
+  const ctx = mockContext({
     fillRect() {},
     fillText(value, x, y) { text.push({ value, x, y }); },
-    measureText(value) { return { width: value.length * 24 }; },
     drawImage(...args) { images.push(args); },
-  };
+  });
   return { canvas: { getContext: () => ctx }, text, images };
 }
 
@@ -21,7 +21,8 @@ test("all artwork types use one portrait layout with fact, source and branding",
     assert.equal(canvas.height, 1920);
     const words = text.map(t => t.value).join(" ");
     assert.ok(words.includes(FACT));
-    assert.ok(words.includes("Breast cancer awareness"));
+    assert.ok(words.includes("PINK OCTOBER"));
+    assert.ok(!words.includes("Scan:"));
     assert.ok(words.includes("Source: WHO"));
     assert.ok(words.includes("#GDGPinkOctober"));
     assert.ok(!words.includes("pledge"));
@@ -29,7 +30,7 @@ test("all artwork types use one portrait layout with fact, source and branding",
     if (artwork) {
       const [image, x, y, width, height] = images[0];
       assert.equal(image, artwork);
-      assert.ok(x >= 80 && y >= 470 && x + width <= 1000 && y + height <= 1120);
+      assert.ok(x >= -335 && y >= -370 && x + width <= 335 && y + height <= 270);
       assert.equal(width / height, artwork.width / artwork.height);
     } else assert.ok(!words.includes("2 of 3"));
   }
@@ -72,4 +73,55 @@ test("unsupported or failed sharing downloads; cancellation does not", async () 
     canShare: () => true,
     share: async () => { throw Object.assign(new Error("Cancel"), { name: "AbortError" }); },
   }, () => assert.fail("Cancellation must not download")), "cancelled");
+});
+
+
+test("heart and photo variants render the fact and preserve their fit rules", () => {
+  for (const variant of ["heart", "photo"]) {
+    const { canvas, text, images } = canvasSpy();
+    const artwork = { width: 1080, height: 1920 };
+    assert.doesNotThrow(() => renderStory(canvas, { artwork, variant, fact: "A sample awareness fact." }));
+    assert.ok(text.map(t => t.value).join(" ").includes("A sample awareness fact."));
+    assert.equal(images[0].length, variant === "photo" ? 9 : 5);
+    if (variant === "photo") {
+      const [, sx, sy, sw, sh, , , w, h] = images[0];
+      assert.ok(sx >= 0 && sy >= 0 && sx + sw <= artwork.width && sy + sh <= artwork.height);
+      assert.ok(Math.abs(sw / sh - w / h) < 1e-10);
+    }
+  }
+});
+
+test("font preparation is guarded and awaits both typefaces", async () => {
+  const previous = globalThis.document;
+  try {
+    delete globalThis.document;
+    await ensureStoryFonts();
+    const loaded = [], pending = [];
+    globalThis.document = { fonts: { load(font) { loaded.push(font); return new Promise(resolve => pending.push(resolve)); } } };
+    let done = false;
+    const ready = ensureStoryFonts().then(() => { done = true; });
+    await Promise.resolve();
+    assert.equal(done, false);
+    assert.deepEqual(loaded, ['600 64px "Bodoni Moda"', '600 40px "DM Sans"']);
+    pending.forEach(resolve => resolve()); await ready;
+    assert.equal(done, true);
+  } finally { globalThis.document = previous; }
+});
+
+
+test("watercolour is repeatable and long facts shrink within the card", () => {
+  const traces = [];
+  for (let run = 0; run < 2; run++) {
+    const wash = [], factLines = [];
+    const ctx = mockContext({
+      createRadialGradient(...args) { wash.push(args); return { addColorStop() {} }; },
+      fillText(value, x, y) { if (value.includes("awareness")) factLines.push({ y, font: this.font }); },
+    });
+    renderStory({ getContext: () => ctx }, { fact: "awareness ".repeat(100) });
+    traces.push(wash);
+    assert.ok(factLines.length > 1);
+    assert.ok(factLines.every(line => line.y > 1320 && line.y < 1600));
+    assert.ok(factLines.every(line => Number(line.font.match(/(\d+)px/)[1]) < 44));
+  }
+  assert.deepEqual(traces[0], traces[1]);
 });
