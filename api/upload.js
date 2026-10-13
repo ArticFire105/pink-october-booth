@@ -45,7 +45,7 @@ export function createUploadHandler(putBlob = put) {
     }
     const buffer = Buffer.concat(chunks);
     if (!buffer.subarray(0, 8).equals(PNG_MAGIC)) return res.status(400).json({ error: 'invalid-png' });
-    const id = `${Date.now()}-${crypto.randomUUID()}`;
+    const id = crypto.randomBytes(12).toString('base64url');
     try {
       const { url } = await putBlob(`booth/${id}.png`, buffer, {
         access: 'public', contentType: 'image/png', addRandomSuffix: false,

@@ -8,12 +8,12 @@ export function qrMatrix(text) {
     Array.from({ length: qr.getModuleCount() }, (_, col) => qr.isDark(row, col)));
 }
 
-export function paintQR(ctx, text, x, y, cell = 6) {
+export function paintQR(ctx, text, x, y, cell = 6, { light = '#FFF8FB', dark = '#39152A' } = {}) {
   const matrix = qrMatrix(text);
   const size = (matrix.length + 8) * cell;
-  ctx.fillStyle = '#FFF8FB';
+  ctx.fillStyle = light;
   ctx.fillRect(x, y, size, size);
-  ctx.fillStyle = '#39152A';
+  ctx.fillStyle = dark;
   matrix.forEach((row, r) => row.forEach((dark, c) => {
     if (dark) ctx.fillRect(x + (c + 4) * cell, y + (r + 4) * cell, cell, cell);
   }));

@@ -36,7 +36,7 @@ test('upload validates method, storage, MIME, magic and streamed size without ne
 test('upload streams PNG and returns pathname id; storage failures are quiet', async t => {
   env(t, 'BLOB_READ_WRITE_TOKEN', 'test-token');
   const handler = createUploadHandler(async (path, buffer, options) => {
-    assert.match(path, /^booth\/\d+-[\da-f-]+\.png$/);
+    assert.match(path, /^booth\/[A-Za-z0-9_-]{16}\.png$/);
     assert.deepEqual(buffer, png);
     assert.deepEqual(options, { access: 'public', contentType: 'image/png', addRandomSuffix: false });
     return { url: `https://test.public.blob.vercel-storage.com/${path}` };

@@ -50,8 +50,10 @@ export function createResultScreen({ onPhoto, onHome, onExport = () => {},
       void upload(blob).then(downloadURL => {
         if (token !== generation || !downloadURL) return;
         const qr = get("download-qr-canvas");
-        qr.width = qr.height = (qrMatrix(downloadURL).length + 8) * 4;
-        paintQR(qr.getContext("2d"), downloadURL, 0, 0, 4);
+        qr.width = qr.height = (qrMatrix(downloadURL).length + 8) * 10;
+        const ctx = qr.getContext("2d");
+        ctx.imageSmoothingEnabled = false;
+        paintQR(ctx, downloadURL, 0, 0, 10, { light: "#FFFFFF", dark: "#000000" });
         get("download-qr").hidden = false;
       }).catch(() => { /* Local download remains available. */ });
     } catch {

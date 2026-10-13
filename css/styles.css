@@ -1070,9 +1070,9 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 }
 @media (hover: none), (pointer: coarse) { .silk-trail { display: none; } }
 
-.download-qr { margin: 1rem auto; text-align: center; }
-.download-qr canvas { display: block; width: min(48vw, 200px); height: auto; margin: 0 auto .5rem; image-rendering: pixelated; }
-.download-qr figcaption { font-size: .9rem; }
+.download-qr { position: relative; z-index: 50; isolation: isolate; width: max-content; max-width: 100%; margin: 1rem auto; padding: 16px 16px 12px; background: #FFFFFF; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.12); text-align: center; opacity: 1; filter: none; mix-blend-mode: normal; animation: none; transition: none; transform: none; }
+.download-qr canvas { display: block; width: clamp(260px, 30vw, 320px); max-width: calc(100vw - 64px); height: auto; aspect-ratio: 1; margin: 0 auto .5rem; background: #FFFFFF; image-rendering: pixelated; image-rendering: crisp-edges; opacity: 1; filter: none; mix-blend-mode: normal; }
+.download-qr figcaption { font-size: 1rem; font-weight: 600; color: #000000; }
 body.photo-download-page { overflow-y: auto; height: auto; color: #39152A; background: #FFF8FB; }
 .photo-download { width: min(100% - 2rem, 440px); margin: 0 auto; padding: 2.5rem 0; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 1.25rem; }
 .photo-download h1 { font-family: "Bodoni Moda", Georgia, serif; font-size: clamp(2rem, 7vw, 3rem); line-height: 1.1; }
@@ -1080,3 +1080,4 @@ body.photo-download-page { overflow-y: auto; height: auto; color: #39152A; backg
 .photo-download img { display: block; max-width: 100%; max-height: 60dvh; object-fit: contain; }
 .photo-download .primary { width: 100%; min-height: 56px; background: #c2185b; color: white; font-size: 1.15rem; }
 .photo-download button:focus-visible { outline: 3px solid #39152A; outline-offset: 4px; }
+body:has(#result:not([hidden])) .silk-trail, body:has(#download-qr:not([hidden])) .silk-trail { display: none; }
