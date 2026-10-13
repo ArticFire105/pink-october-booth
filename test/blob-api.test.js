@@ -24,7 +24,7 @@ test('upload validates method, storage, MIME, magic and streamed size without ne
   let res = await upload(request([], 'GET'), response());
   assert.equal(res.code, 405); assert.equal(res.headers.Allow, 'POST');
   res = await upload(request(), response());
-  assert.equal(res.code, 503); assert.deepEqual(res.body, { error: 'storage-unavailable' });
+  assert.equal(res.code, 503); assert.deepEqual(res.body, { error: 'storage-unavailable', reason: 'no-token' });
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token';
   for (const req of [request([Buffer.from('invalid')]), request([png], 'POST', { 'content-type': 'text/plain' }), request()]) {
     assert.equal((await upload(req, response())).code, 400);

@@ -11,7 +11,7 @@ export function createUploadHandler(putBlob = put) {
       res.setHeader('Allow', 'POST');
       return res.status(405).json({ error: 'method-not-allowed' });
     }
-    if (!process.env.BLOB_READ_WRITE_TOKEN) return res.status(503).json({ error: 'storage-unavailable' });
+    if (!process.env.BLOB_READ_WRITE_TOKEN) return res.status(503).json({ error: 'storage-unavailable', reason: 'no-token' });
     if (req.headers['content-type']?.split(';')[0].trim().toLowerCase() !== 'image/png') {
       return res.status(400).json({ error: 'invalid-png' });
     }
@@ -36,8 +36,9 @@ export function createUploadHandler(putBlob = put) {
         access: 'public', contentType: 'image/png', addRandomSuffix: false,
       });
       return res.status(200).json({ url, id });
-    } catch {
-      return res.status(503).json({ error: 'storage-unavailable' });
+    } catch (err) {
+      console.error('blob put failed:', err?.name, err?.message);
+      return res.status(503).json({ error: 'storage-unavailable', reason: 'put-failed', kind: String(err?.name || 'Error').slice(0, 60) });
     }
   };
 }
