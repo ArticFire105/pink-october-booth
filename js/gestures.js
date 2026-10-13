@@ -304,3 +304,9 @@ export function isThumbsUp(landmarks) {
   const curled = [[8, 6], [12, 10], [16, 14], [20, 18]].every(([t, pip]) => dist(landmarks[t], w) < dist(landmarks[pip], w));
   return up && curled;
 }
+
+/** Thumbs-down mirrors thumbs-up vertically and ignores handedness. */
+export function isThumbsDown(landmarks) {
+  if (!validHand(landmarks)) return false;
+  return isThumbsUp(landmarks.map(point => point && ({ ...point, y: -point.y })));
+}

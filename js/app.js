@@ -1,3 +1,5 @@
+import { createPhotoChoice } from "./photo-choice.js";
+import { createFactRotator, renderPhotoFact } from "./fact-rotator.js";
 import { boundsOf, composePortrait } from "./photo-stickers.js";
 import { portraitCrop, faceCentre } from "./portrait-crop.js";
 import { createQuizAdvance } from "./quiz-advance.js";
@@ -21,6 +23,7 @@ import {
   mapCoverPoint,
   pinchRatio,
   isThumbsUp,
+  isThumbsDown,
 } from "./gestures.js";
 import { createIdleWatch, createPointFilter, shouldBreakStroke } from "./filters.js";
 import { createDrawFinish } from "./draw-finish.js";
@@ -225,7 +228,7 @@ navigator.mediaDevices?.addEventListener?.("devicechange", () => {
 
 const counters = setupStats(() => { nextVisitor(); boothExtras.reset(); });
 const boothExtras = setupBoothExtras(counters, state);
-const resultScreen = createResultScreen({ onPhoto: () => enterMode("heart"), onHome: nextVisitor,
+const resultScreen = createResultScreen({ onHome: nextVisitor,
   onExport: () => counters.record("exports") });
 document.getElementById("next-visitor").onclick = nextVisitor;
 
@@ -239,14 +242,14 @@ let factStorage;
 try { factStorage = window.localStorage; } catch { /* In-memory fact bag. */ }
 const factBag = createFactBag(factStorage);
 
-function showResult(result, photo = false) {
-  result = photo ? { ...currentResult, ...result } : {
+function showResult(result, photo = false, prepared = false) {
+  result = prepared ? result : photo ? { ...currentResult, ...result } : {
     ...result, fact: factBag.next(),
     heart: state.mode === "draw" ? normalizeHeart(drawState.strokes) : [],
   };
   currentResult = result;
   if (state.mode === "quiz" && !photo) celebrateFinish();
-  if (!photo) counters.record(state.mode);
+  if (!photo && !prepared) counters.record(state.mode);
   boothExtras.refresh();
   boothExtras.leave();
   state.entry += 1;
@@ -258,6 +261,84 @@ function showResult(result, photo = false) {
   stopCamera();
   stage.hidden = true;
   resultScreen.show(result, photo);
+}
+
+let photoChoice = null;
+const choicePanel = document.getElementById("photo-choice");
+const photoFacts = createFactRotator();
+let factTimer = null, factAnimation = null;
+document.getElementById("choose-photo").onclick = () => choosePhotoOption("photo");
+document.getElementById("choose-heart").onclick = () => choosePhotoOption("heart");
+
+function showPhotoChoice(result) {
+  currentResult = { ...result, heartArtwork: result.artwork,
+    fact: factBag.next(), heart: normalizeHeart(drawState.strokes) };
+  counters.record("draw");
+  boothExtras.refresh();
+  drawHud.hidden = true;
+  hintBar.hidden = true;
+  document.querySelector("#team-controls").hidden = true;
+  state.mode = "choice";
+  photoChoice = createPhotoChoice(performance.now());
+  choicePanel.hidden = false;
+  for (const option of ["photo", "heart"]) document.getElementById("choice-" + option + "-ring").style.strokeDashoffset = 1;
+  document.getElementById("photo-choice-title").focus();
+}
+
+function renderPhotoChoice(now) {
+  const up = state.hands.some(isThumbsUp), down = state.hands.some(isThumbsDown);
+  const choice = photoChoice.update(up === down ? null : up ? "photo" : "heart", now);
+  for (const option of ["photo", "heart"]) {
+    document.getElementById("choice-" + option + "-ring").style.strokeDashoffset =
+      1 - (choice.held === option ? choice.progress : 0);
+  }
+  if (choice.selected) choosePhotoOption(choice.selected);
+}
+
+function choosePhotoOption(option) {
+  if (state.mode !== "choice") return;
+  const selected = photoChoice.choose(option);
+  choicePanel.hidden = true;
+  if (selected === "photo") enterMode("heart");
+  else showResult(currentResult, false, true);
+}
+
+function displayPhotoFact(fact) {
+  document.getElementById("photo-fact-text").textContent = fact.text;
+  document.getElementById("photo-fact-source").href = fact.source;
+}
+
+function startPhotoFacts() {
+  photoFacts.unlock();
+  const panel = document.getElementById("photo-fact");
+  panel.hidden = false;
+  displayPhotoFact(photoFacts.current());
+  factTimer = setInterval(() => {
+    if (photoFacts.state.locked) return;
+    displayPhotoFact(photoFacts.next());
+    factAnimation?.cancel();
+    if (!reduceMotion) factAnimation = panel.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 450 });
+  }, 4000);
+}
+
+function lockPhotoFact() {
+  const fact = photoFacts.lock();
+  factAnimation?.cancel();
+  const panel = document.getElementById("photo-fact");
+  panel.style.opacity = "1";
+  displayPhotoFact(fact);
+}
+
+function stopPhotoFacts() {
+  clearInterval(factTimer);
+  factTimer = null;
+  factAnimation?.cancel();
+  document.getElementById("photo-fact").hidden = true;
+}
+
+function clearPhotoUI() {
+  choicePanel.hidden = true;
+  stopPhotoFacts();
 }
 
 boot();
@@ -319,6 +400,7 @@ async function createModels() {
 }
 
 async function enterMode(mode) {
+  clearPhotoUI();
   boothExtras.leave();
   if (mode === "quiz" && !state.questions) return;
   if (mode !== "heart") resultScreen.clear();
@@ -342,6 +424,11 @@ async function enterMode(mode) {
   debugEl.hidden = !debugOn;
   hideGate();
   resetMode(mode);
+  if (mode === "heart") startPhotoFacts();
+  if (mode === "choice") {
+    photoChoice = createPhotoChoice(performance.now());
+    choicePanel.hidden = false;
+  }
   idle.mark(performance.now());
   startLoop();
   if (mode === "quiz") setQuizNote("Starting the camera…");
@@ -385,6 +472,7 @@ async function enterMode(mode) {
   }
   if (token !== state.entry) return;
   state.visionReady = true;
+  if (mode === "heart") beginPhoto(performance.now());
   hideGate();
   if (mode === "quiz") setQuizNote("Look straight to set center");
   else setHint(mode === "draw" ? "Get ready to trace the heart" : HINTS.heart, { locked: false });
@@ -436,6 +524,7 @@ function resetSelfie() {
 }
 
 function goHome() {
+  clearPhotoUI();
   boothExtras.leave();
   currentResult = null;
   resultScreen.clear();
@@ -488,6 +577,7 @@ function frame(now) {
   if (now - state.lastFaceAt > 400) state.face = null;
   if (now - state.lastHandsAt > 400) state.hands = [];
   if (state.mode === "draw") renderDraw(now);
+  else if (state.mode === "choice") renderPhotoChoice(now);
   else if (state.mode === "heart") renderHeart(now);
   else if (state.mode === "quiz") renderQuiz(now);
   stepParticles(dt);
@@ -693,7 +783,7 @@ function finishDrawing() {
   const entry = state.entry;
   drawResultTimer = setTimeout(() => {
     if (state.entry === entry && state.mode === "draw" && drawState.phase === "scored") {
-      showResult({ artwork, percent: result.percent, stars: result.stars, label: `Draw Hope · Heart tracing ${result.percent}% · ${result.stars}/5 stars` });
+      showPhotoChoice({ artwork, percent: result.percent, stars: result.stars, label: `Draw Hope · Heart tracing ${result.percent}% · ${result.stars}/5 stars` });
     }
   }, 3000);
 }
@@ -742,7 +832,8 @@ function renderHeart(now) {
     const left = 3 - Math.floor((now - selfie.since) / PHOTO_BEAT_MS);
     if (left <= 0) {
       photoCount.hidden = true;
-      capturePhoto();
+      lockPhotoFact();
+      try { capturePhoto(); } finally { stopPhotoFacts(); photoFacts.unlock(); }
       selfie.phase = "preview";
       document.querySelector("#photo-controls").hidden = true;
     } else {
@@ -797,7 +888,9 @@ function capturePhoto() {
   const heartBox = heartBounds && { x: heartBounds.x - w * .009, y: heartBounds.y - w * .009,
     width: heartBounds.width + w * .018, height: heartBounds.height + w * .018 };
   const portrait = composePortrait(document.createElement("canvas"), canvas, faceBox, [], heartBox);
-  showResult({ artwork: portrait, label: "My Pink October photo" }, true);
+  const fact = photoFacts.current();
+  renderPhotoFact(portrait.getContext("2d"), fact, w, h);
+  showResult({ artwork: portrait, photoArtwork: portrait, fact: fact.text, label: "My Pink October photo" }, true);
 }
 
 function renderQuiz(now) {

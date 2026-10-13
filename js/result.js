@@ -1,16 +1,15 @@
-import { uploadImage } from "./cloud-share.js";
-import { paintQR, qrMatrix } from "./story-qr.js";
 import { FACT, SOURCE, renderStory, pngBlob, shareStory } from "./story.js";
 
-export function createResultScreen({ onPhoto, onHome, onExport = () => {},
-  upload = uploadImage, schedule = setTimeout, cancel = clearTimeout }) {
+export function createResultScreen({ onHome, onExport = () => {},
+  schedule = setTimeout, cancel = clearTimeout }) {
   const get = id => document.getElementById(id);
   const panel = get("result");
   const preview = get("story-preview");
   const status = get("story-status");
   const share = get("story-share");
   const download = get("story-download");
-  let result = null, storyOpen = false, file = null, url = "", generation = 0;
+  const photoDownload = get("photo-download");
+  let result = null, file = null, url = "", heartURL = "", generation = 0;
   get("result-fact").textContent = FACT;
   get("result-source").href = SOURCE;
 
@@ -24,7 +23,9 @@ export function createResultScreen({ onPhoto, onHome, onExport = () => {},
 
   function invalidate() {
     generation += 1;
-    get("download-qr").hidden = true;
+    if (heartURL && heartURL !== url) URL.revokeObjectURL(heartURL);
+    heartURL = "";
+    photoDownload.disabled = true;
     if (url) URL.revokeObjectURL(url);
     url = "";
     file = null;
@@ -38,51 +39,40 @@ export function createResultScreen({ onPhoto, onHome, onExport = () => {},
     status.textContent = "Creating your story…";
     status.focus();
     try {
-      const canvas = renderStory(document.createElement("canvas"), result);
-      const blob = await pngBlob(canvas);
+      const canvas = renderStory(document.createElement("canvas"), {
+        ...result, artwork: result.heartArtwork ?? result.artwork,
+      });
+      const heartBlob = await pngBlob(canvas);
+      if (token !== generation) return;
+      const blob = result.photoArtwork ? await pngBlob(result.photoArtwork) : heartBlob;
       if (token !== generation) return;
       file = new File([blob], "gdg-pink-october.png", { type: "image/png" });
-      url = URL.createObjectURL(blob);
+      heartURL = URL.createObjectURL(heartBlob);
+      url = result.photoArtwork ? URL.createObjectURL(blob) : heartURL;
+      photoDownload.disabled = false;
       preview.src = url;
       preview.hidden = false;
       share.disabled = download.disabled = false;
       status.textContent = "Your story is ready.";
-      void upload(blob).then(downloadURL => {
-        if (token !== generation || !downloadURL) return;
-        const qr = get("download-qr-canvas");
-        qr.width = qr.height = (qrMatrix(downloadURL).length + 8) * 10;
-        const ctx = qr.getContext("2d");
-        ctx.imageSmoothingEnabled = false;
-        paintQR(ctx, downloadURL, 0, 0, 10, { light: "#FFFFFF", dark: "#000000" });
-        get("download-qr").hidden = false;
-      }).catch(() => { /* Local download remains available. */ });
     } catch {
       if (token === generation) {
-        get("story-make").hidden = false;
-        status.textContent = "Could not create the PNG. Select Make my story to try again.";
+        status.textContent = "Could not create the PNG. Please return and try again.";
       }
     }
   }
-  function save() {
-    if (!url) return;
+  function save(target = url, name = "gdg-pink-october.png") {
+    if (!target) return;
     const link = document.createElement("a");
-    link.href = url;
-    link.download = "gdg-pink-october.png";
+    link.href = target;
+    link.download = name;
     document.body.append(link);
     link.click();
     link.remove();
     onExport();
     status.textContent = "Download requested on this device.";
   }
-  get("story-make").onclick = () => {
-    storyOpen = true;
-    get("story-make").hidden = true;
-    get("story-step").hidden = false;
-    get("result-achievement").hidden = true;
-    restartTimeout();
-    generate();
-  };
-  download.onclick = save;
+  download.onclick = () => save(heartURL, "pink-october-heart.png");
+  photoDownload.onclick = () => save(url, "pink-october-photo.png");
   share.onclick = async () => {
     if (!file) return;
     const token = generation;
@@ -94,18 +84,17 @@ export function createResultScreen({ onPhoto, onHome, onExport = () => {},
     status.textContent = outcome === "shared" ? "Shared with the selected app." :
       outcome === "cancelled" ? "Share cancelled. You can try again or download." : "Download requested on this device.";
   };
-  get("result-photo").onclick = () => { panel.hidden = true; stopTimeout(); invalidate(); onPhoto(); };
   get("result-home").onclick = onHome;
   return {
     show(next, photo = false) {
-      if (!photo) { storyOpen = false; }
       restartTimeout();
       result = next;
       invalidate();
       panel.hidden = false;
-      get("story-make").hidden = storyOpen;
-      get("result-achievement").hidden = storyOpen;
-      get("story-step").hidden = !storyOpen;
+      get("result-achievement").hidden = true;
+      get("story-step").hidden = false;
+      photoDownload.hidden = !next.photoArtwork;
+      download.textContent = next.heartArtwork || next.artwork ? "Download heart image" : "Download story";
       get("result-fact").textContent = next.fact ?? FACT;
       get("result-summary").textContent = next.percent != null ? `${next.percent}%` :
         next.total != null ? `${next.correct} / ${next.total}` : next.label;
@@ -117,11 +106,9 @@ export function createResultScreen({ onPhoto, onHome, onExport = () => {},
         artwork.height = next.artwork.height;
         artwork.getContext("2d").drawImage(next.artwork, 0, 0);
       }
-      get("result-photo").textContent = photo ? "Retake optional photo" : "Add optional photo";
       status.textContent = "";
-      if (!storyOpen) get("result-title").focus();
-      if (storyOpen) generate();
+      generate();
     },
-    clear() { stopTimeout(); invalidate(); result = null; storyOpen = false; panel.hidden = true; },
+    clear() { stopTimeout(); invalidate(); result = null; panel.hidden = true; },
   };
 }

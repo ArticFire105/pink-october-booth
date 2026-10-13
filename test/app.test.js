@@ -103,13 +103,13 @@ test("drawing export mirrors the ink just like the displayed canvas", () => {
     spawnConfetti: () => calls.push(["confetti"]), live: {}, drawResultTimer: 0,
     setTimeout: callback => { calls.push(["scheduled"]); app.complete = callback; },
     document: { createElement: () => ({ getContext: () => ctx }) },
-    showResult: () => calls.push(["result"]),
+    showPhotoChoice: () => calls.push(["choice"]),
   });
   app.finishDrawing();
   assert.deepEqual(calls, [["confetti"], ["translate", 800, 0], ["scale", -1, 1], ["draw", ink, 0, 0], ["scheduled"]]);
   assert.equal(app.drawStars.textContent, "☆☆☆☆☆");
   app.complete();
-  assert.deepEqual(calls.at(-1), ["result"]);
+  assert.deepEqual(calls.at(-1), ["choice"]);
 });
 
 test("completed result keeps one fact and the actual heart across photo retakes", () => {
@@ -146,6 +146,8 @@ test("photo captures a mirrored 9:16 portrait crop and drawn overlay together", 
   ctx.drawImage = (...args) => calls.push(["video", ...args.slice(1)]);
   const canvas = { getContext: () => ctx };
   const app = appFunctions(["capturePhoto"], {
+    photoFacts: { current: () => ({ text: "Locked fact", source: "WHO" }) },
+    renderPhotoFact: (ctx, fact) => assert.equal(fact.text, "Locked fact"),
     portraitCrop, faceCentre, boundsOf: () => null, placeHeart: () => [], currentResult: null,
     composePortrait: (target, source) => { assert.equal(source, canvas); return target; },
     view: { w: 800, h: 600 }, state: { face: [] },
@@ -171,6 +173,7 @@ test("photo thumbs-up starts countdown after 500 ms; button works without a face
     isThumbsUp: hand => hand === "thumb", isHeartGesture: () => false,
     photoThumbHold: createEdgeHold(500), heartHold: createEdgeHold(500),
     PHOTO_BEAT_MS: 1000, photoCount: counts, setHint() {},
+    lockPhotoFact() {}, stopPhotoFacts() {}, photoFacts: { unlock() {} },
     capturePhoto: () => captures++, document: { querySelector: () => ({}) },
   });
   app.renderHeart(0);
@@ -188,4 +191,37 @@ test("photo thumbs-up starts countdown after 500 ms; button works without a face
   app.state.hands = [];
   app.beginPhoto(4000);
   assert.equal(app.selfie.phase, "countdown");
+});
+
+import { createFactRotator } from "../js/fact-rotator.js";
+
+test("countdown locks displayed fact and cancels fade before capture, then unlocks", () => {
+  const photoFacts = createFactRotator(["First", "Second"], "WHO source");
+  const elements = new Map();
+  const get = id => {
+    if (!elements.has(id)) elements.set(id, { style: { opacity: ".3" } });
+    return elements.get(id);
+  };
+  const events = [];
+  const app = appFunctions(["renderHeart", "lockPhotoFact", "displayPhotoFact"], {
+    selfie: { phase: "countdown", since: 0 },
+    PHOTO_BEAT_MS: 1000, photoCount: {},
+    photoFacts, factAnimation: { cancel() { events.push("cancel fade"); } },
+    document: { getElementById: get, querySelector: get },
+    stopPhotoFacts() { events.push("stop"); },
+    capturePhoto() {
+      assert.equal(photoFacts.state.locked, true);
+      const displayed = get("photo-fact-text").textContent;
+      photoFacts.next(); // Simulate a queued rotation tick.
+      assert.equal(photoFacts.current().text, displayed);
+      assert.equal(photoFacts.current().source, get("photo-fact-source").href);
+      assert.equal(get("photo-fact").style.opacity, "1");
+      events.push("capture");
+    },
+  });
+  photoFacts.next();
+  app.displayPhotoFact(photoFacts.current());
+  app.renderHeart(3000);
+  assert.deepEqual(events, ["cancel fade", "capture", "stop"]);
+  assert.equal(photoFacts.state.locked, false);
 });

@@ -22,3 +22,20 @@ test("thumbs-up rejects open hand, down thumb, and missing hands", () => {
   assert.equal(isThumbsUp(hand(false, true)), false);
   assert.equal(isThumbsUp(null), false);
 });
+
+import { isThumbsDown } from "../js/gestures.js";
+test("thumbs-down and thumbs-up are exclusive for both handednesses", () => {
+  for (const mirror of [false, true]) {
+    const up = hand(true, true).map(p => ({ x: mirror ? 1 - p.x : p.x, y: p.y }));
+    const down = up.map(p => ({ ...p, y: 1 - p.y }));
+    assert.equal(isThumbsUp(up), true);
+    assert.equal(isThumbsDown(up), false);
+    assert.equal(isThumbsDown(down), true);
+    assert.equal(isThumbsUp(down), false);
+    for (const open of [hand(true, false), hand(true, false).map(p => ({ ...p, y: 1 - p.y }))]) {
+      assert.equal(isThumbsDown(open), false);
+      assert.equal(isThumbsUp(open), false);
+    }
+  }
+  assert.equal(isThumbsDown(null), false);
+});
