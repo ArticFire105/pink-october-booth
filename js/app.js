@@ -43,7 +43,7 @@ const CAMERA_KEY = "gdg-pink-october-camera";
 const DETECT_GAP_MS = 33;
 const IDLE_MS = 75000;
 const DRAW_BEAT_MS = 1000;
-const DRAW_LIMIT_MS = 22000;
+const DRAW_LIMIT_MS = 45000;
 const THUMBS_HOLD_MS = 500;
 let thumbsSince = null;
 // Unit-diagonal heart is ~0.67 tall and ~0.74 wide: ~65% of frame height, capped by width.
