@@ -26,7 +26,7 @@ function setup(extra = {}) {
   return appFunctions(["ensureCamera", "stopCamera"], {
     cameraToken: 0, stream: null, state: { cameraOk: true, face: {}, hands: [{}] },
     lastVideoTime: 10, tilt: { recalibrate() {} },
-    readCameraId: () => "", autoCameraId: "", navigator: { mediaDevices: { getUserMedia() {} } },
+    readCameraId: () => "", autoCameraId: "", applyCameraLightConstraints() {}, navigator: { mediaDevices: { getUserMedia() {} } },
     video: { play: async () => {} }, listCameras: async () => {}, console: { warn() {} }, ...extra,
   });
 }

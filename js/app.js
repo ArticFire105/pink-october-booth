@@ -1,4 +1,5 @@
 import { preferCamera } from "./camera-pref.js";
+import { createLightProcessor, applyCameraLightConstraints, displayFilter, LIMITS } from "./light-adjust.js";
 import { createInterlude, shouldPlayInterlude, INTERLUDE } from "./interlude.js";
 import { createPhotoChoice } from "./photo-choice.js";
 import { createFactRotator, renderPhotoFact } from "./fact-rotator.js";
@@ -594,6 +595,38 @@ function frame(now) {
   if (state.mode !== "home" && idle.expired(now)) nextVisitor();
 }
 
+// ---- Auto light (exposure compensation for tracking under floodlights) ----
+// MediaPipe sees a corrected copy (brightness, contrast, highlight knee). The mirror shows a
+// lighter CSS version; captured photos/story images use the raw camera so faces look natural.
+let light = null, detectSource = null;
+try { light = createLightProcessor(); } catch (error) { console.warn("Light correction unavailable", error); }
+const lightPanel = document.getElementById("light-panel");
+function renderLightPanel() {
+  if (!light) return;
+  const s = light.settings, st = light.stats;
+  document.getElementById("light-auto").checked = light.prefs.auto;
+  for (const key of ["brightness", "contrast", "glare"]) {
+    const input = document.getElementById("light-" + key);
+    if (light.prefs.auto || document.activeElement !== input) input.value = s[key];
+    input.disabled = light.prefs.auto;
+    document.getElementById("light-" + key + "-val").textContent = s[key].toFixed(2);
+  }
+  document.getElementById("light-stats").textContent = st
+    ? `Scene: mean ${(st.mean * 100).toFixed(0)}% · glare ${(st.white * 100).toFixed(1)}%` : "Scene: waiting for camera";
+}
+if (lightPanel && light) {
+  for (const key of ["brightness", "contrast", "glare"]) {
+    const input = document.getElementById("light-" + key);
+    [input.min, input.max] = LIMITS[key];
+    input.addEventListener("input", () => { light.setPrefs({ manual: { [key]: Number(input.value) } }); renderLightPanel(); });
+  }
+  document.getElementById("light-auto").addEventListener("change", event => {
+    light.setPrefs({ auto: event.target.checked, manual: event.target.checked ? {} : { ...light.settings } });
+    renderLightPanel();
+  });
+  document.getElementById("light-close").onclick = () => { lightPanel.hidden = true; };
+}
+
 function detect(now) {
   if (!state.visionReady || !state.cameraOk || video.readyState < 2) return;
   if (video.currentTime === lastVideoTime) return;
@@ -601,6 +634,10 @@ function detect(now) {
   lastVideoTime = video.currentTime;
   lastDetect = now;
   try {
+    detectSource = light ? light.frame(video, now) : video;
+    const filter = light ? displayFilter(light.settings) : "";
+    if (video.style.filter !== filter) video.style.filter = filter;
+    if (!lightPanel.hidden) renderLightPanel();
     if (state.mode === "quiz") {
       detectFace(now);
       detectHands(now);
@@ -620,7 +657,7 @@ function detect(now) {
 function detectHands(now) {
   if (!handLandmarker || now <= handTs) return;
   handTs = now;
-  const result = handLandmarker.detectForVideo(video, now);
+  const result = handLandmarker.detectForVideo(detectSource || video, now);
   state.hands = result.landmarks || [];
   state.handedness = result.handednesses || [];
   if (state.hands.length) state.lastHandsAt = now;
@@ -629,7 +666,7 @@ function detectHands(now) {
 function detectFace(now) {
   if (!faceLandmarker || now <= faceTs) return;
   faceTs = now;
-  const result = faceLandmarker.detectForVideo(video, now);
+  const result = faceLandmarker.detectForVideo(detectSource || video, now);
   state.face = result.faceLandmarks?.[0] || null;
   if (state.face) state.lastFaceAt = now;
 }
@@ -1231,6 +1268,7 @@ async function ensureCamera() {
   stopCamera();
   stream = next;
   video.srcObject = stream;
+  applyCameraLightConstraints(stream.getVideoTracks()[0]);
   try {
     await video.play();
   } catch (error) {
@@ -1572,6 +1610,12 @@ function onKey(event) {
   if (event.repeat) return;
   idle.mark(performance.now());
   if (typingTarget(event)) return;
+  if ((event.key === "l" || event.key === "L") && !event.metaKey && !event.ctrlKey && !event.altKey && lightPanel && light) {
+    event.preventDefault();
+    lightPanel.hidden = !lightPanel.hidden;
+    if (!lightPanel.hidden) renderLightPanel();
+    return;
+  }
   if ((event.key === "d" || event.key === "D") && !event.metaKey && !event.ctrlKey && !event.altKey) {
     event.preventDefault();
     debugOn = !debugOn;

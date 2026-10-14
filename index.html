@@ -250,6 +250,15 @@
     </dialog>
     <svg id="finish-ribbon" viewBox="0 0 280 420" aria-hidden="true"><path d="M65 380 195 147C241 69 166 31 140 87 114 31 39 69 85 147L215 380" fill="none" stroke="currentColor" stroke-width="23" /></svg>
     <noscript>This booth needs JavaScript turned on in Chrome.</noscript>
+    <section id="light-panel" class="light-panel" hidden aria-label="Lighting (organiser)">
+      <header><strong>Lighting</strong><button id="light-close" type="button" aria-label="Close">×</button></header>
+      <label class="light-auto"><input id="light-auto" type="checkbox" checked /> Auto (recommended)</label>
+      <label>Brightness <output id="light-brightness-val"></output><input id="light-brightness" type="range" step="0.01" /></label>
+      <label>Contrast <output id="light-contrast-val"></output><input id="light-contrast" type="range" step="0.01" /></label>
+      <label>Glare cut <output id="light-glare-val"></output><input id="light-glare" type="range" step="0.01" /></label>
+      <p id="light-stats" class="light-stats"></p>
+      <p class="light-note">Press L to hide. Saved on this laptop. Affects tracking (and a softer version of the preview); photos stay natural.</p>
+    </section>
     <script type="module" src="js/app.js?v=b67b31a"></script>
     <script type="module" src="js/ribbon-pencil.js?v=b67b31a"></script>
     <script type="module" src="js/silk-trail.js?v=b67b31a"></script>

@@ -1135,3 +1135,12 @@ body.interlude-on .silk-trail, body.interlude-on .garlands, body.interlude-on .d
 .story-name span { font-weight: 400; color: #876675; }
 .story-name input { width: 100%; box-sizing: border-box; padding: 10px 14px; font: 600 20px "Bodoni Moda", Georgia, serif; color: #A3175A; background: #fff; border: 2px solid #F0CEDC; border-radius: 12px; outline: none; }
 .story-name input:focus { border-color: #C51D61; box-shadow: 0 0 0 3px rgba(197,29,97,.15); }
+
+/* Organiser lighting panel (key L) */
+.light-panel { position: fixed; top: 64px; right: 16px; z-index: 1000; width: 280px; padding: 14px 16px; font: 14px "DM Sans", sans-serif; color: #39152A; background: rgba(255,248,251,.96); border: 1px solid #F0CEDC; border-radius: 14px; box-shadow: 0 8px 24px rgba(57,21,42,.18); }
+.light-panel header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.light-panel header button { border: 0; background: none; font-size: 20px; cursor: pointer; color: #39152A; }
+.light-panel label { display: block; margin: 8px 0; }
+.light-panel input[type=range] { width: 100%; accent-color: #C51D61; }
+.light-panel output { float: right; font-variant-numeric: tabular-nums; }
+.light-stats, .light-note { margin: 6px 0 0; font-size: 12px; color: #735765; }
