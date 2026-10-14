@@ -1,4 +1,5 @@
 import { preferCamera } from "./camera-pref.js";
+import { landmarkBox, createPlayerLock, selectPlayerHands } from "./player-select.js";
 import { createInterlude, shouldPlayInterlude, INTERLUDE } from "./interlude.js";
 import { createPhotoChoice } from "./photo-choice.js";
 import { createFactRotator, renderPhotoFact } from "./fact-rotator.js";
@@ -383,13 +384,13 @@ async function createModels() {
   };
   const [hands, face] = await Promise.all([
     make(vision.HandLandmarker, HAND_MODEL, {
-      numHands: 2,
+      numHands: 4,
       minHandDetectionConfidence: 0.5,
       minHandPresenceConfidence: 0.5,
       minTrackingConfidence: 0.5,
     }),
     make(vision.FaceLandmarker, FACE_MODEL, {
-      numFaces: 1,
+      numFaces: 3,
       outputFaceBlendshapes: false,
       outputFacialTransformationMatrixes: false,
       minFaceDetectionConfidence: 0.5,
@@ -414,6 +415,8 @@ async function enterMode(mode) {
   state.cameraOk = false;
   state.hands = [];
   state.face = null;
+  state.faceBox = null;
+  faceLock.reset(); handLock.reset();
   lastPinch = null;
   lastTilt = null;
   home.hidden = true;
@@ -617,12 +620,25 @@ function detect(now) {
   }
 }
 
+// Main-player lock (closest to centre, with hysteresis) so a second person doesn't steal tracking.
+const faceLock = createPlayerLock();
+const handLock = createPlayerLock({ matchDist: 0.25 });
+
 function detectHands(now) {
   if (!handLandmarker || now <= handTs) return;
   handTs = now;
   const result = handLandmarker.detectForVideo(video, now);
-  state.hands = result.landmarks || [];
-  state.handedness = result.handednesses || [];
+  const all = result.landmarks || [], handed = result.handednesses || [];
+  // Only the main player's hands. Team mode keeps two hands (two players), most central first.
+  let keep;
+  if (state.mode === "draw" && drawState.team) keep = selectPlayerHands(all, { max: 2 });
+  else {
+    const face = (state.mode === "quiz" || state.mode === "heart") && state.face ? state.faceBox : null;
+    const primary = face ? -1 : handLock.update(all.map(h => ({ ...h[0], size: 0 })), now);
+    keep = selectPlayerHands(all, { face, primary, max: 2 });
+  }
+  state.hands = keep.map(i => all[i]);
+  state.handedness = keep.map(i => handed[i]);
   if (state.hands.length) state.lastHandsAt = now;
 }
 
@@ -630,7 +646,11 @@ function detectFace(now) {
   if (!faceLandmarker || now <= faceTs) return;
   faceTs = now;
   const result = faceLandmarker.detectForVideo(video, now);
-  state.face = result.faceLandmarks?.[0] || null;
+  const faces = result.faceLandmarks || [];
+  const boxes = faces.map(f => landmarkBox(f, 8));
+  const pick = faceLock.update(boxes, now);
+  state.face = pick >= 0 ? faces[pick] : null;
+  state.faceBox = pick >= 0 ? boxes[pick] : null;
   if (state.face) state.lastFaceAt = now;
 }
 
